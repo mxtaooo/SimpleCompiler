@@ -102,6 +102,8 @@ public class Lexer
                 return new Token(Kind.Rparen, lineNum);
             case ';':
                 return new Token(Kind.Semi, lineNum);
+            case '-':
+                return new Token(Kind.Sub, lineNum);
             case '*':
                 return new Token(Kind.Times, lineNum);
             default:
@@ -171,7 +173,7 @@ public class Lexer
         return '+' == c || '&' == c || '=' == c || ',' == c || '.' == c
                 || '{' == c || '(' == c || '<' == c || '!' == c
                 || '}' == c || ')' == c || ';' == c || ':' == c
-                || '*' == c;
+                || '-' == c || '*' == c;
     }
 
     private static boolean isNumber(String str)

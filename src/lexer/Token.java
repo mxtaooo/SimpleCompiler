@@ -33,6 +33,7 @@ public class Token
         Return, // return
         Rparen, // )
         Semi, // ;
+        Sub, // -
         This, // this
         Times, // *
         True, // true
@@ -60,8 +61,8 @@ public class Token
     @Override
     public String toString()
     {
-        return this.kind.toString()
-                + " : " + (lexeme == null ? "" : this.lexeme)
+        return "Token_" + this.kind.toString()
+                + (lexeme == null ? "" : " : " + this.lexeme)
                 + " : at line " + this.lineNum;
     }
 }
