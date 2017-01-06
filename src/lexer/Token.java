@@ -28,7 +28,7 @@ public class Token
         New, // new
         Not, // !
         NUM, // Integer literal
-        Print, // print
+        Print, // print, we just treat it as a key word
         Rbrace, // }
         Return, // return
         Rparen, // )
