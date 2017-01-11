@@ -151,7 +151,7 @@ public class Parser
         }
         Ast.Exp.T exp = parseNotExp();
         Ast.Exp.T tem = new Ast.Exp.Not(exp, exp.lineNum);
-        return i%2 == 0 ? exp : tem;
+        return i % 2 == 0 ? exp : tem;
     }
 
     // AddSubExp -> TimesExp * TimesExp
@@ -212,5 +212,75 @@ public class Parser
             exp = new Ast.Exp.And(exp, tem, exp.lineNum);
         }
         return exp;
+    }
+
+    // Statement -> { Statement* }
+    //  -> if (Exp) Statement else Statement
+    //  -> while (Exp) Statement
+    //  -> print(Exp);
+    //  -> id = Exp;
+    private Ast.Stm.T parseStatement()
+    {
+        Ast.Stm.T stm = null;
+        if (current.kind == Kind.Lbrace)
+        {
+            eatToken(Kind.Lbrace);
+            int lineNum = current.lineNum;
+            stm = new Ast.Stm.Block(parseStatements(), lineNum);
+            eatToken(Kind.Rbrace);
+        } else if (current.kind == Kind.If)
+        {
+            int lineNum = current.lineNum;
+            eatToken(Kind.If);
+            eatToken(Kind.Lparen);
+            Ast.Exp.T condition = parseExp();
+            eatToken(Kind.Rparen);
+            Ast.Stm.T then_stm = parseStatement();
+            eatToken(Kind.Else);
+            Ast.Stm.T else_stm = parseStatement();
+            stm = new Ast.Stm.If(condition, then_stm, else_stm, lineNum);
+        } else if (current.kind == Kind.While)
+        {
+            int lineNum = current.lineNum;
+            eatToken(Kind.While);
+            eatToken(Kind.Lparen);
+            Ast.Exp.T condition = parseExp();
+            eatToken(Kind.Rparen);
+            Ast.Stm.T body = parseStatement();
+            stm = new Ast.Stm.While(condition, body, lineNum);
+        } else if (current.kind == Kind.Print)
+        {
+            int lineNum = current.lineNum;
+            eatToken(Kind.Print);
+            eatToken(Kind.Lparen);
+            Ast.Exp.T exp = parseExp();
+            eatToken(Kind.Rparen);
+            eatToken(Kind.Semi);
+            stm = new Ast.Stm.Print(exp, lineNum);
+        } else if (current.kind == Kind.ID)
+        {
+            String id = current.lexeme;
+            int lineNum = current.lineNum;
+            eatToken(Kind.ID);
+            eatToken(Kind.Assign);
+            Ast.Exp.T exp = parseExp();
+            stm = new Ast.Stm.Assign(id, exp, lineNum);
+        } else
+            error();
+
+        return stm;
+    }
+
+    // Statements -> Statement Statements
+    //  ->
+    private LinkedList<Ast.Stm.T> parseStatements()
+    {
+        LinkedList<Ast.Stm.T> stms = new LinkedList<>();
+        while (current.kind == Kind.Lbrace || current.kind == Kind.If
+                || current.kind == Kind.While || current.kind == Kind.ID
+                || current.kind == Kind.Print)
+            stms.addLast(parseStatement());
+
+        return stms;
     }
 }
