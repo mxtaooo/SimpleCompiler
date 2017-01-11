@@ -30,7 +30,6 @@
            -> while (Exp) Statement
            -> print(Exp);
            -> Id = Exp;
-           -> Id[Exp] = Exp;
  
  Exp -> Exp op Exp
      -> Exp.Id(ExpList)
