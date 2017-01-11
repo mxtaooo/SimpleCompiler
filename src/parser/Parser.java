@@ -13,13 +13,18 @@ import java.util.LinkedList;
  */
 public class Parser
 {
-    Lexer lexer;
-    Token current;
+    private Lexer lexer;
+    private Token current;
+
+    // for vardecl parser
+    private boolean isValDecl;
+    private Ast.Stm.T assign;
 
     public Parser(InputStream fstream)
     {
         lexer = new Lexer(fstream);
         current = lexer.nextToken();
+        assign = null;
     }
 
     // utility methods
@@ -282,5 +287,72 @@ public class Parser
             stms.addLast(parseStatement());
 
         return stms;
+    }
+
+    // Type -> int
+    //  -> boolean
+    //  -> id
+    private Ast.Type.T parseType()
+    {
+        Ast.Type.T type = null;
+        if (current.kind == Kind.Boolean)
+        {
+            type = new Ast.Type.Boolean();
+            advance();
+        } else if (current.kind == Kind.Int)
+        {
+            type = new Ast.Type.Int();
+            advance();
+        } else if (current.kind == Kind.ID)
+        {
+            type = new Ast.Type.ClassType(current.lexeme);
+            advance();
+        } else
+            error();
+        return type;
+    }
+
+    // VarDecl -> Type id;
+    private Ast.Dec.T parseVarDecl()
+    {
+        assign = null;
+        Ast.Type.T type = parseType();
+        if (current.kind == Kind.Assign)
+        {
+            advance();
+            Ast.Exp.T exp = parseExp();
+            eatToken(Kind.Semi);
+            assign = new Ast.Stm.Assign(((Ast.Type.ClassType) type).id,
+                    exp, exp.lineNum);
+            isValDecl = false;
+            return null;
+        } else if (current.kind == Kind.ID)
+        {
+            Ast.Dec.T dec = new Ast.Dec.DecSingle(type, current.lexeme, current.lineNum);
+            advance();
+            eatToken(Kind.Semi);
+            isValDecl = true;
+            return dec;
+        } else
+        {
+            error();
+            return null;
+        }
+    }
+
+    // VarDecls -> VarDecl VarDecls
+    //  ->
+    private LinkedList<Ast.Dec.T> parseVarDecls()
+    {
+        LinkedList<Ast.Dec.T> decs = new LinkedList<>();
+        isValDecl = true;
+        while (current.kind == Kind.Int || current.kind == Kind.Boolean
+                || current.kind == Kind.ID)
+        {
+            Ast.Dec.T dec = parseVarDecl();
+            if (dec != null) decs.addLast(dec);
+            if (!isValDecl) break;
+        }
+        return decs;
     }
 }
