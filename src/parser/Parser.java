@@ -1,6 +1,7 @@
 package parser;
 
 import ast.Ast;
+import ast.Visitor;
 import lexer.Lexer;
 import lexer.Token;
 import lexer.Token.Kind;
@@ -354,5 +355,135 @@ public class Parser
             if (!isValDecl) break;
         }
         return decs;
+    }
+
+    // FormalList -> Type id FormalRest*
+    //  ->
+    // FormalRest -> , Type id
+    private LinkedList<Ast.Dec.T> parseFormalList()
+    {
+        LinkedList<Ast.Dec.T> decs = new LinkedList<>();
+        if (current.kind == Kind.Int || current.kind == Kind.Boolean
+                || current.kind == Kind.ID)
+        {
+            decs.addLast(new Ast.Dec.DecSingle(parseType(), current.lexeme, current.lineNum));
+            eatToken(Kind.ID);
+            while (current.kind == Kind.Commer)
+            {
+                advance();
+                decs.addLast(new Ast.Dec.DecSingle(parseType(), current.lexeme, current.lineNum));
+                eatToken(Kind.ID);
+            }
+        }
+        return decs;
+    }
+
+    // Method -> Type id (FormalList)
+    //          {VarDec* Statement* return Exp; }
+    private Ast.Method.T parseMethod()
+    {
+        Ast.Type.T retType = parseType();
+        String id = current.lexeme;
+        eatToken(Kind.ID);
+        eatToken(Kind.Lparen);
+        LinkedList<Ast.Dec.T> formalList = parseFormalList();
+        eatToken(Kind.Rparen);
+        eatToken(Kind.Lbrace);
+        LinkedList<Ast.Dec.T> varDecs = parseVarDecls();
+        LinkedList<Ast.Stm.T> stms = parseStatements();
+        if (!isValDecl && assign != null)
+        {
+            stms.addFirst(assign);
+            assign = null;
+        }
+        eatToken(Kind.Return);
+        Ast.Exp.T retExp = parseExp();
+        eatToken(Kind.Semi);
+        eatToken(Kind.Rbrace);
+
+        return new Ast.Method.MethodSingle(retType, id, formalList, varDecs, stms, retExp);
+    }
+
+    // MethodDecls -> MethodDecl MethodDecls*
+    //  ->
+    private LinkedList<Ast.Method.T> parseMethodDecls()
+    {
+        LinkedList<Ast.Method.T> methods = new LinkedList<>();
+        while (current.kind == Kind.ID ||
+                current.kind == Kind.Int ||
+                current.kind == Kind.Boolean)
+            methods.addLast(parseMethod());
+
+        return methods;
+    }
+
+    // ClassDecl -> class id { VarDecl* MethodDecl* }
+    //  -> class id : id { VarDecl* Method* }
+    private Ast.Class.T parseClassDecl()
+    {
+        eatToken(Kind.Class);
+        String id = current.lexeme;
+        eatToken(Kind.ID);
+        String superClass = null;
+        if (current.kind == Kind.Colon)
+        {
+            advance();
+            superClass = current.lexeme;
+            eatToken(Kind.ID);
+        }
+        eatToken(Kind.Lbrace);
+        LinkedList<Ast.Dec.T> decs = parseVarDecls();
+        LinkedList<Ast.Method.T> methods = parseMethodDecls();
+        eatToken(Kind.Rbrace);
+        return new Ast.Class.ClassSingle(id, superClass, decs, methods);
+    }
+
+    // ClassDecls -> ClassDecl ClassDecls*
+    //  ->
+    private LinkedList<Ast.Class.T> parseClassDecls()
+    {
+        LinkedList<Ast.Class.T> classes = new LinkedList<>();
+        while (current.kind == Kind.Class)
+            classes.addLast(parseClassDecl());
+
+        return classes;
+    }
+
+    // MainClass -> class id
+    //    {
+    //        void main()
+    //        {
+    //            Statement
+    //        }
+    //    }
+    private Ast.MainClass.MainClassSingle parseMainClass()
+    {
+        eatToken(Kind.Class);
+        String id = current.lexeme;
+        eatToken(Kind.ID);
+        eatToken(Kind.Lbrace);
+        eatToken(Kind.Void);
+        eatToken(Kind.Main);
+        eatToken(Kind.Lparen);
+        eatToken(Kind.Rparen);
+        eatToken(Kind.Lbrace);
+        Ast.Stm.T stm = parseStatement();
+        eatToken(Kind.Rbrace);
+        eatToken(Kind.Rbrace);
+        return new Ast.MainClass.MainClassSingle(id, stm);
+    }
+
+    // Program -> MainClass ClassDecl*
+    private Ast.Program.ProgramSingle parseProgram()
+    {
+        Ast.MainClass.MainClassSingle main = parseMainClass();
+        LinkedList<Ast.Class.T> classes = parseClassDecls();
+        eatToken(Kind.EOF);
+        return new Ast.Program.ProgramSingle(main, classes);
+    }
+
+    public Ast.Program.T parse()
+    {
+        return parseProgram();
     }
 }
