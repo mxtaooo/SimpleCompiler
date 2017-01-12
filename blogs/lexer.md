@@ -17,7 +17,7 @@ Lexer
  MethodDec -> Type Id (FormalList)
               { VarDec* Statement* return Exp;}
 
- FromalList -> Type Id FormalRest*
+ FormalList -> Type Id FormalRest*
             ->
 
  FormalRest -> , Type Id
