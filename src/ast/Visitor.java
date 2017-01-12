@@ -8,6 +8,8 @@ import ast.Ast.*;
 public interface Visitor
 {
     // Type
+    void visit(Type.T t);
+
     void visit(Type.Boolean t);
 
     void visit(Type.ClassType t);
@@ -18,6 +20,8 @@ public interface Visitor
     void visit(Dec.DecSingle d);
 
     // Exp
+    void visit(Exp.T e);
+
     void visit(Exp.Add e);
 
     void visit(Exp.And e);
@@ -45,6 +49,8 @@ public interface Visitor
     void visit(Exp.True e);
 
     // Stm
+    void visit(Stm.T s);
+
     void visit(Stm.Assign s);
 
     void visit(Stm.Block s);

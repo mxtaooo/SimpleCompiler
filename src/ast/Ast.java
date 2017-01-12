@@ -8,7 +8,7 @@ public class Ast
     // Type
     public static class Type
     {
-        public static abstract class T implements Acceptable
+        public static abstract class T
         {}
 
         public static class Boolean extends T
@@ -19,12 +19,6 @@ public class Ast
             public String toString()
             {
                 return "@boolean";
-            }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
             }
         }
 
@@ -42,12 +36,6 @@ public class Ast
             {
                 return this.id;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
 
         public static class Int extends T
@@ -59,12 +47,6 @@ public class Ast
             {
                 return "@int";
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
 
     }
@@ -72,7 +54,7 @@ public class Ast
     // Dec
     public static class Dec
     {
-        public static abstract class T implements ast.Acceptable
+        public static abstract class T
         {
             public int lineNum;
         }
@@ -88,19 +70,13 @@ public class Ast
                 this.id = id;
                 this.lineNum = lineNum;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
     }
 
     // Expression
     public static class Exp
     {
-        public static abstract class T implements ast.Acceptable
+        public static abstract class T
         {
             public int lineNum;
         }
@@ -115,12 +91,6 @@ public class Ast
                 this.right = right;
                 this.lineNum = lineNum;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
 
         public static class And extends T
@@ -132,12 +102,6 @@ public class Ast
                 this.left = left;
                 this.right = right;
                 this.lineNum = lineNum;
-            }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
             }
         }
 
@@ -157,12 +121,6 @@ public class Ast
                 this.type = null;
                 this.lineNum = lineNum;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
 
         public static class False extends T
@@ -170,12 +128,6 @@ public class Ast
             public False(int lineNum)
             {
                 this.lineNum = lineNum;
-            }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
             }
         }
 
@@ -198,12 +150,6 @@ public class Ast
                 this.isField = isField;
                 this.lineNum = lineNum;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
 
         public static class LT extends T
@@ -216,12 +162,6 @@ public class Ast
                 this.right = right;
                 this.lineNum = lineNum;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
 
         public static class NewObject extends T
@@ -232,12 +172,6 @@ public class Ast
             {
                 this.id = id;
                 this.lineNum = lineNum;
-            }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
             }
         }
 
@@ -250,12 +184,6 @@ public class Ast
                 this.exp = exp;
                 this.lineNum = lineNum;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
 
         public static class Num extends T
@@ -266,12 +194,6 @@ public class Ast
             {
                 this.num = num;
                 this.lineNum = lineNum;
-            }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
             }
         }
 
@@ -285,12 +207,6 @@ public class Ast
                 this.right = right;
                 this.lineNum = lineNum;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
 
         public static class This extends T
@@ -298,12 +214,6 @@ public class Ast
             public This(int lineNum)
             {
                 this.lineNum = lineNum;
-            }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
             }
         }
 
@@ -317,12 +227,6 @@ public class Ast
                 this.right = right;
                 this.lineNum = lineNum;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
 
         public static class True extends T
@@ -331,19 +235,13 @@ public class Ast
             {
                 this.lineNum = lineNum;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
     }
 
     // Statement
     public static class Stm
     {
-        public static abstract class T implements Acceptable
+        public static abstract class T
         {
             public int lineNum;
         }
@@ -361,12 +259,6 @@ public class Ast
                 this.type = null;
                 this.lineNum = lineNum;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
 
         public static class Block extends T
@@ -377,12 +269,6 @@ public class Ast
             {
                 this.stms = stms;
                 this.lineNum = lineNum;
-            }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
             }
         }
 
@@ -398,12 +284,6 @@ public class Ast
                 this.else_stm = else_stm;
                 this.lineNum = lineNum;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
 
         public static class Print extends T
@@ -414,12 +294,6 @@ public class Ast
             {
                 this.exp = exp;
                 this.lineNum = lineNum;
-            }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
             }
         }
 
@@ -434,18 +308,12 @@ public class Ast
                 this.body = body;
                 this.lineNum = lineNum;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
     }
 
     public static class Method
     {
-        public static abstract class T implements Acceptable
+        public static abstract class T
         {}
 
         public static class MethodSingle extends T
@@ -470,18 +338,12 @@ public class Ast
                 this.stms = stms;
                 this.retExp = retExp;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
     }
 
     public static class Class
     {
-        public static abstract class T implements Acceptable
+        public static abstract class T
         {}
 
         public static class ClassSingle extends T
@@ -500,18 +362,12 @@ public class Ast
                 this.fields = fields;
                 this.methods = methods;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
     }
 
     public static class MainClass
     {
-        public static abstract class T implements Acceptable
+        public static abstract class T
         {}
 
         public static class MainClassSingle extends T
@@ -524,18 +380,12 @@ public class Ast
                 this.id = id;
                 this.stm = stm;
             }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
-            }
         }
     }
 
     public static class Program
     {
-        public static abstract class T implements Acceptable
+        public static abstract class T
         {}
 
         public static class ProgramSingle extends T
@@ -548,12 +398,6 @@ public class Ast
             {
                 this.mainClass = mainClass;
                 this.classes = classes;
-            }
-
-            @Override
-            public void accept(Visitor v)
-            {
-                v.visit(this);
             }
         }
     }
