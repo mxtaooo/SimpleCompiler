@@ -1,7 +1,6 @@
 package parser;
 
 import ast.Ast;
-import ast.Visitor;
 import lexer.Lexer;
 import lexer.Token;
 import lexer.Token.Kind;
@@ -20,12 +19,14 @@ public class Parser
     // for vardecl parser
     private boolean isValDecl;
     private Ast.Stm.T assign;
+    private Ast.Method.MethodSingle method;
 
     public Parser(InputStream fstream)
     {
         lexer = new Lexer(fstream);
         current = lexer.nextToken();
         assign = null;
+        method = null;
     }
 
     // utility methods
@@ -270,6 +271,7 @@ public class Parser
             eatToken(Kind.ID);
             eatToken(Kind.Assign);
             Ast.Exp.T exp = parseExp();
+            eatToken(Kind.Semi);
             stm = new Ast.Stm.Assign(id, exp, lineNum);
         } else
             error();
@@ -317,8 +319,9 @@ public class Parser
     private Ast.Dec.T parseVarDecl()
     {
         assign = null;
+        method = null;
         Ast.Type.T type = parseType();
-        if (current.kind == Kind.Assign)
+        if (current.kind == Kind.Assign)  // maybe a assign statement in method
         {
             advance();
             Ast.Exp.T exp = parseExp();
@@ -329,11 +332,39 @@ public class Parser
             return null;
         } else if (current.kind == Kind.ID)
         {
-            Ast.Dec.T dec = new Ast.Dec.DecSingle(type, current.lexeme, current.lineNum);
+            String id = current.lexeme;
             advance();
-            eatToken(Kind.Semi);
-            isValDecl = true;
-            return dec;
+            if (current.kind == Kind.Semi)
+            {
+                isValDecl = true;
+                Ast.Dec.T dec = new Ast.Dec.DecSingle(type, id, current.lineNum);
+                eatToken(Kind.Semi);
+                return dec;
+            } else if (current.kind == Kind.Lparen) // maybe a method in class
+            {
+                isValDecl = false;
+                eatToken(Kind.Lparen);
+                LinkedList<Ast.Dec.T> formalList = parseFormalList();
+                eatToken(Kind.Rparen);
+                eatToken(Kind.Lbrace);
+                LinkedList<Ast.Dec.T> varDecs = parseVarDecls();
+                LinkedList<Ast.Stm.T> stms = parseStatements();
+                if (!isValDecl && assign != null)
+                {
+                    stms.addFirst(assign);
+                    assign = null;
+                }
+                eatToken(Kind.Return);
+                Ast.Exp.T retExp = parseExp();
+                eatToken(Kind.Semi);
+                eatToken(Kind.Rbrace);
+                method = new Ast.Method.MethodSingle(type, id, formalList, varDecs, stms, retExp);
+                return null;
+            } else
+            {
+                error();
+                return null;
+            }
         } else
         {
             error();
@@ -434,6 +465,11 @@ public class Parser
         eatToken(Kind.Lbrace);
         LinkedList<Ast.Dec.T> decs = parseVarDecls();
         LinkedList<Ast.Method.T> methods = parseMethodDecls();
+        if (method != null)
+        {
+            methods.addFirst(method);
+            method = null;
+        }
         eatToken(Kind.Rbrace);
         return new Ast.Class.ClassSingle(id, superClass, decs, methods);
     }
