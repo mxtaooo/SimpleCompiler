@@ -5,6 +5,8 @@ Lexer
 ---
 
 ```text
+ ## GRAMMAR
+
  Program -> MainClass ClassDec*
 
  MainClass -> class Id { void main() { Statement }}
@@ -61,10 +63,60 @@ Lexer
  LineComment -> // the total line is comment
 ```
 
+由以上文法给出`Token`的定义
+---
+
+```java
+public enum Kind
+{
+    Add, // +
+    And, // &&
+    Assign, // =
+    Boolean, // boolean
+    Class, // class
+    Colon, // :
+    Commer, // ,
+    Dot, // .
+    Else, // else
+    EOF, // End of file
+    False, // false
+    ID, // Identifier
+    If, // if
+    Int, // int
+    Lbrace, // {
+    Lparen, // (
+    LT, // <
+    Main, // main
+    New, // new
+    Not, // !
+    NUM, // Integer literal
+    Print, // print, we just treat it as a key word
+    Rbrace, // }
+    Return, // return
+    Rparen, // )
+    Semi, // ;
+    Sub, // -
+    This, // this
+    Times, // *
+    True, // true
+    Void, // void
+    While, // while
+}
+
+public class Token
+{
+    public Kind kind;       // the kind of this token
+    public String lexeme;   // extra lexeme of this token, if exsists
+    public int lineNum;     // the token's position in source file
+}
+```
+
+特别的，应当注意到 `Print`、`main` 不应该是关键字，仅仅是两个方法名而已。在此处将之视为关键字，能大大方便后期的分析和识别
+
 由以上文法给出的程序样例
 ---
 
-```Csharp
+```java
 class TestMain
 {
     // This is the entry point of the program
@@ -88,7 +140,7 @@ class Test
 }
 ```
 
-词法分析实现详解
+词法分析实现
 ---
 
 词法分析部分采用了手动实现的方式，具体思路如下
@@ -101,7 +153,8 @@ class Test
 * 如果发现文法错误，那么立即报告错误并给出相应提示
 * 此过程中未尝试错误恢复，发现任何未定义符号/串，词法分析器拒绝继续执行
 
-例如对于上文的程序样例中第6行 `print(new Test().Compute(10));   // just a print statement` 词法分析后的Token流是
+例如，对于上文的程序样例中第6行 `print(new Test().Compute(10));   // just a print statement`   
+词法分析后的Token流是
 
 ```text
 Token_Print : at line 6
