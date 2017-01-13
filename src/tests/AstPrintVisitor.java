@@ -235,7 +235,7 @@ public class AstPrintVisitor implements ast.Visitor
         {
             if (i != 0)
                 System.out.print(", ");
-            this.visit(((Ast.Dec.DecSingle) m.formals.get(i)));
+            this.visit(m.formals.get(i));
         }
         System.out.println(")");
         this.printSpaces();
@@ -244,7 +244,7 @@ public class AstPrintVisitor implements ast.Visitor
         for (Ast.Dec.T dec : m.decs)
         {
             this.printSpaces();
-            this.visit(((Ast.Dec.DecSingle) dec));
+            this.visit(dec);
             System.out.print(";");
             System.out.println();
         }
@@ -273,12 +273,12 @@ public class AstPrintVisitor implements ast.Visitor
         for (Ast.Dec.T dec : c.fields)
         {
             printSpaces();
-            this.visit(((Ast.Dec.DecSingle) dec));
+            this.visit(dec);
             System.out.println(";");
         }
         for (Ast.Method.T method : c.methods)
         {
-            this.visit(((Ast.Method.MethodSingle) method));
+            this.visit(method);
         }
         System.out.println("}");
     }
@@ -300,10 +300,10 @@ public class AstPrintVisitor implements ast.Visitor
     @Override
     public void visit(Ast.Program.ProgramSingle p)
     {
-        this.visit(((Ast.MainClass.MainClassSingle) p.mainClass));
+        this.visit(p.mainClass);
         for (Ast.Class.T c : p.classes)
         {
-            this.visit(((Ast.Class.ClassSingle) c));
+            this.visit(c);
         }
     }
 }

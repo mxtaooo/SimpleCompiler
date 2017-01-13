@@ -25,6 +25,11 @@ public interface Visitor
     void visit(Type.Int t);
 
     // Dec
+    default void visit(Dec.T d)
+    {
+        this.visit(((Dec.DecSingle) d));
+    }
+
     void visit(Dec.DecSingle d);
 
     // Exp
@@ -110,10 +115,25 @@ public interface Visitor
     void visit(Stm.While s);
 
     // Method
+    default void visit(Method.T m)
+    {
+        this.visit(((Method.MethodSingle) m));
+    }
+
     void visit(Method.MethodSingle m);
 
     // Class
+    default void visit(Ast.Class.T c)
+    {
+        this.visit(((Ast.Class.ClassSingle) c));
+    }
+
     void visit(Ast.Class.ClassSingle c);
+
+    default void visit(Ast.MainClass.T c)
+    {
+        this.visit(((MainClass.MainClassSingle) c));
+    }
 
     void visit(MainClass.MainClassSingle c);
 
