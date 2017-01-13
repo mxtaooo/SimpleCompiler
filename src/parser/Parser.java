@@ -7,6 +7,7 @@ import lexer.Token.Kind;
 
 import java.io.InputStream;
 import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Created by Mengxu on 2017/1/11.
@@ -18,21 +19,48 @@ public class Parser
 
     // for vardecl parser
     private boolean isValDecl;
-    private Ast.Stm.T assign;
-    private Ast.Method.MethodSingle method;
+    private boolean isMarking;
+    private Queue<Token> markedTokens;
 
     public Parser(InputStream fstream)
     {
         lexer = new Lexer(fstream);
         current = lexer.nextToken();
-        assign = null;
-        method = null;
+        isMarking = false;
+        markedTokens = new LinkedList<>();
     }
 
     // utility methods
     private void advance()
     {
-        current = lexer.nextToken();
+        if (isMarking)
+        {
+            current = lexer.nextToken();
+            markedTokens.offer(current);
+        } else if (!markedTokens.isEmpty())
+            current = markedTokens.poll();
+        else current = lexer.nextToken();
+    }
+
+    // start recording the tokens
+    private void mark()
+    {
+        isMarking = true;
+        markedTokens.offer(current);
+    }
+
+    // stop recording the tokens and clear recorded
+    private void unMark()
+    {
+        isMarking = false;
+        markedTokens.clear();
+    }
+
+    // reset current token and stop recording
+    private void reset()
+    {
+        isMarking = false;
+        advance();
     }
 
     private void eatToken(Kind kind)
@@ -318,16 +346,11 @@ public class Parser
     // VarDecl -> Type id;
     private Ast.Dec.T parseVarDecl()
     {
-        assign = null;
-        method = null;
+        this.mark();
         Ast.Type.T type = parseType();
         if (current.kind == Kind.Assign)  // maybe a assign statement in method
         {
-            advance();
-            Ast.Exp.T exp = parseExp();
-            eatToken(Kind.Semi);
-            assign = new Ast.Stm.Assign(((Ast.Type.ClassType) type).id,
-                    exp, exp.lineNum);
+            this.reset();
             isValDecl = false;
             return null;
         } else if (current.kind == Kind.ID)
@@ -336,6 +359,7 @@ public class Parser
             advance();
             if (current.kind == Kind.Semi)
             {
+                this.unMark();
                 isValDecl = true;
                 Ast.Dec.T dec = new Ast.Dec.DecSingle(type, id, current.lineNum);
                 eatToken(Kind.Semi);
@@ -343,22 +367,7 @@ public class Parser
             } else if (current.kind == Kind.Lparen) // maybe a method in class
             {
                 isValDecl = false;
-                eatToken(Kind.Lparen);
-                LinkedList<Ast.Dec.T> formalList = parseFormalList();
-                eatToken(Kind.Rparen);
-                eatToken(Kind.Lbrace);
-                LinkedList<Ast.Dec.T> varDecs = parseVarDecls();
-                LinkedList<Ast.Stm.T> stms = parseStatements();
-                if (!isValDecl && assign != null)
-                {
-                    stms.addFirst(assign);
-                    assign = null;
-                }
-                eatToken(Kind.Return);
-                Ast.Exp.T retExp = parseExp();
-                eatToken(Kind.Semi);
-                eatToken(Kind.Rbrace);
-                method = new Ast.Method.MethodSingle(type, id, formalList, varDecs, stms, retExp);
+                this.reset();
                 return null;
             } else
             {
@@ -422,11 +431,6 @@ public class Parser
         eatToken(Kind.Lbrace);
         LinkedList<Ast.Dec.T> varDecs = parseVarDecls();
         LinkedList<Ast.Stm.T> stms = parseStatements();
-        if (!isValDecl && assign != null)
-        {
-            stms.addFirst(assign);
-            assign = null;
-        }
         eatToken(Kind.Return);
         Ast.Exp.T retExp = parseExp();
         eatToken(Kind.Semi);
@@ -465,11 +469,6 @@ public class Parser
         eatToken(Kind.Lbrace);
         LinkedList<Ast.Dec.T> decs = parseVarDecls();
         LinkedList<Ast.Method.T> methods = parseMethodDecls();
-        if (method != null)
-        {
-            methods.addFirst(method);
-            method = null;
-        }
         eatToken(Kind.Rbrace);
         return new Ast.Class.ClassSingle(id, superClass, decs, methods);
     }
