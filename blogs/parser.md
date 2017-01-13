@@ -183,3 +183,105 @@ private Ast.Stm.T parseStatement()
 ```
 
 其中`eatToken`方法是吞掉指定类型的记号，如果当前记号类型与要求吞掉的类型不符，说明源程序一定存在语法错误，能够实现立即报错，并能给出较为准确的错误信息。
+
+实例分析
+---
+
+对于lexer.md 中给出的程序样例
+
+```java
+class TestMain
+{
+    // This is the entry point of the program
+    void main()
+    {
+        print(new Test().Compute(10));   // just a print statement
+    }
+}
+
+class Test
+{
+    int Compute(int num)
+    {
+        int total;
+        if ( num < 1)
+            total = 1;
+        else
+            total = num * (this.Compute(num-1));
+        return total;
+    }
+}
+```
+
+语法分析完成后的输出的抽象语法树如下示意
+
+
++ Program
+    + MainClass
+        + id : TestMain
+        + MainMethod
+            + id : main
+            + stm (size = 1)
+                + Print // statement -> print(exp);
+                    + exp : Call // expression -> exp.id(args)
+                        + exp: NewObject // expression -> new id()
+                            + id : Test
+                        + id : Compute
+                        + args (size = 1)
+                            + Num(10)
+    + Classes (size = 1)
+        + Class
+            + id : Test
+            + base : null
+            + fields (size = 0)
+            + methods (size = 1)
+                + method
+                    + retType : int
+                    + id : Compute
+                    + formals (size = 1)
+                        + VarDecl
+                            + Type : int
+                            + id : num
+                    + locals (size = 1)
+                        + VarDecl
+                            + Type : int
+                            + id : total
+                    + stms (size = 1)
+                        + If // Statement -> if (condition) then_stm else else_stm
+                            + condition
+                                + LT // expression -> leftExp < rightExp
+                                    + leftExp
+                                        + exp : id // expression -> id
+                                            + id(num)
+                                    + rightExp
+                                        + exp : Num // expression -> Num
+                                            + Num(1)
+                            + then_stm (size = 1) // then statement
+                                + stm: Assign // statement -> id = exp;
+                                    + id : total
+                                    + exp : Num // expression -> Num
+                                        + Num(1)
+                            + else_stm (size = 1) // else statement
+                                + stm : Assign // statement -> id = exp;
+                                    + id : total
+                                    + exp : Times // expression -> leftExp * rightExp
+                                        + leftExp
+                                            + exp : id // expression -> id
+                                                + id(num)
+                                        + rightExp
+                                            + exp : Call // expression -> exp.id(args)
+                                                + exp : This // exp -> this
+                                                    + This
+                                                + id : Compute
+                                                + args (size = 1)
+                                                    + exp : Sub // expression -> leftExp - rightExp
+                                                        + leftExp
+                                                            + exp : id
+                                                                + id(num)
+                                                        + rightExp
+                                                            + exp : Num
+                                                                + Num(1)
+                    + retExp // return exp;
+                        + exp : id
+                            + id(total)
+

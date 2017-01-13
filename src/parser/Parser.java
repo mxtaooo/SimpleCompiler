@@ -69,15 +69,18 @@ public class Parser
             advance();
         else
         {
-            System.out.println("Expects: " + kind.toString());
-            System.out.println("But got: " + current.kind.toString() + " at line " + current.lineNum);
+            System.out.println("Line " + current.lineNum + " :" +
+                    "Expects: " + kind.toString() +
+                    ", but got: " + current.kind.toString());
             System.exit(1);
         }
     }
 
     private void error()
     {
-        System.out.println("Syntax error: compilation aborting...\n");
+        System.out.println("Syntax error at line " +
+                (current != null ? current.lineNum + "" : "unknow")
+                + " compilation aborting...\n");
         System.exit(1);
     }
 
