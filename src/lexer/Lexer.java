@@ -1,7 +1,7 @@
 package lexer;
 
-import javafx.scene.input.TouchEvent;
 import lexer.Token.Kind;
+
 import java.io.IOException;
 import java.io.InputStream;
 
