@@ -8,7 +8,15 @@ import ast.Ast.*;
 public interface Visitor
 {
     // Type
-    void visit(Type.T t);
+    default void visit(Type.T t)
+    {
+        if (t instanceof Ast.Type.Boolean)
+            this.visit(((Ast.Type.Boolean) t));
+        else if (t instanceof Ast.Type.ClassType)
+            this.visit(((Ast.Type.ClassType) t));
+        else if (t instanceof Ast.Type.Int)
+            this.visit(((Ast.Type.Int) t));
+    }
 
     void visit(Type.Boolean t);
 
@@ -20,7 +28,35 @@ public interface Visitor
     void visit(Dec.DecSingle d);
 
     // Exp
-    void visit(Exp.T e);
+    default void visit(Exp.T e)
+    {
+        if (e instanceof Ast.Exp.Add)
+            this.visit(((Ast.Exp.Add) e));
+        else if (e instanceof Ast.Exp.And)
+            this.visit(((Ast.Exp.And) e));
+        else if (e instanceof Ast.Exp.Call)
+            this.visit(((Ast.Exp.Call) e));
+        else if (e instanceof Ast.Exp.False)
+            this.visit(((Ast.Exp.False) e));
+        else if (e instanceof Ast.Exp.Id)
+            this.visit(((Ast.Exp.Id) e));
+        else if (e instanceof Ast.Exp.LT)
+            this.visit(((Ast.Exp.LT) e));
+        else if (e instanceof Ast.Exp.NewObject)
+            this.visit(((Ast.Exp.NewObject) e));
+        else if (e instanceof Ast.Exp.Not)
+            this.visit(((Ast.Exp.Not) e));
+        else if (e instanceof Ast.Exp.Num)
+            this.visit(((Ast.Exp.Num) e));
+        else if (e instanceof Ast.Exp.Sub)
+            this.visit(((Ast.Exp.Sub) e));
+        else if (e instanceof Ast.Exp.This)
+            this.visit(((Ast.Exp.This) e));
+        else if (e instanceof Ast.Exp.Times)
+            this.visit(((Ast.Exp.Times) e));
+        else // if (e instanceof Ast.Exp.True)
+            this.visit(((Ast.Exp.True) e));
+    }
 
     void visit(Exp.Add e);
 
@@ -49,7 +85,19 @@ public interface Visitor
     void visit(Exp.True e);
 
     // Stm
-    void visit(Stm.T s);
+    default void visit(Stm.T s)
+    {
+        if (s instanceof Ast.Stm.Assign)
+            this.visit(((Ast.Stm.Assign) s));
+        else if (s instanceof Ast.Stm.Block)
+            this.visit(((Ast.Stm.Block) s));
+        else if (s instanceof Ast.Stm.If)
+            this.visit(((Ast.Stm.If) s));
+        else if (s instanceof Ast.Stm.Print)
+            this.visit(((Ast.Stm.Print) s));
+        else // if (s instanceof Ast.Stm.While)
+            this.visit(((Ast.Stm.While) s));
+    }
 
     void visit(Stm.Assign s);
 
