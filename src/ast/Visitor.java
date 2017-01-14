@@ -138,5 +138,10 @@ public interface Visitor
     void visit(MainClass.MainClassSingle c);
 
     // Program
+    default void visit(Program.T p)
+    {
+        this.visit(((Program.ProgramSingle) p));
+    }
+
     void visit(Program.ProgramSingle p);
 }

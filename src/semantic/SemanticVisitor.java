@@ -23,9 +23,9 @@ public class SemanticVisitor implements ast.Visitor
         this.type = null;
     }
 
-    private void error()
+    private void error(int lineNum, String msg)
     {
-        System.out.print("Error: ");
+        System.out.println("Error: Line " + lineNum + " " + msg);
     }
 
     private boolean isMatch(Ast.Type.T target, Ast.Type.T cur)
@@ -69,15 +69,12 @@ public class SemanticVisitor implements ast.Visitor
         this.visit(e.right);
         if (!this.type.toString().equals(lefty.toString()))
         {
-            error();
-            System.out.println("Line " + e.lineNum +
-                    " the type of left is" + lefty.toString() +
-                    ", but the type of right is" + this.type.toString());
+            error(e.lineNum, "add expression" +
+                    " the type of left is " + lefty.toString() +
+                    ", but the type of right is " + this.type.toString());
         } else if (!new Ast.Type.Int().toString().equals(this.type.toString()))
         {
-            error();
-            System.out.println("Line " + e.lineNum +
-                    " only integer numbers can be added.");
+            error(e.lineNum, " only integer numbers can be added.");
         }
         this.type = new Ast.Type.Int();
     }
@@ -90,15 +87,12 @@ public class SemanticVisitor implements ast.Visitor
         this.visit(e.right);
         if (!this.type.toString().equals(lefty.toString()))
         {
-            error();
-            System.out.println("Line " + e.lineNum +
-                    " the type of left is" + lefty.toString() +
-                    ", but the type of right is" + this.type.toString());
+            error(e.lineNum, "and expression" +
+                    " the type of left is " + lefty.toString() +
+                    ", but the type of right is " + this.type.toString());
         } else if (!new Ast.Type.Boolean().toString().equals(this.type.toString()))
         {
-            error();
-            System.out.println("Line " + e.lineNum +
-                    " only integer numbers can be added.");
+            error(e.lineNum, " only integer numbers can be added.");
         }
         this.type = new Ast.Type.Boolean();
     }
@@ -115,10 +109,15 @@ public class SemanticVisitor implements ast.Visitor
             e.type = expType.id;
         } else
         {
-            error();
-            System.out.println("Line " + e.lineNum +
-                    "only an instance of class can be invoked.");
-            this.type = new Ast.Type.T() {};
+            error(e.lineNum, "only an instance of class can be invoked.");
+            this.type = new Ast.Type.T()
+            {
+                @Override
+                public String toString()
+                {
+                    return "unknown";
+                }
+            };
             return;
         }
 
@@ -132,17 +131,15 @@ public class SemanticVisitor implements ast.Visitor
         MethodType mty = this.classTable.getMethodType(expType.id, e.id);
         if (mty.argsType.size() != argsty.size())
         {
-            error();
-            System.out.println("Line " + e.lineNum + " the count of arguments is not match ");
+            error(e.lineNum, "the count of arguments is not match.");
         }
         for (int i = 0; i < mty.argsType.size(); i++)
         {
             if (!isMatch(((Ast.Dec.DecSingle) mty.argsType.get(i)).type, argsty.get(i)))
             {
-                error();
-                System.out.println("Line " + e.args.get(i).lineNum + " the parameter " + i +
-                        "needs a " + ((Ast.Dec.DecSingle) mty.argsType.get(i)).type.toString() +
-                        ", but got a" + argsty.get(i).toString());
+                error(e.args.get(i).lineNum, "the parameter " + (i + 1) +
+                        " needs a " + ((Ast.Dec.DecSingle) mty.argsType.get(i)).type.toString() +
+                        ", but got a " + argsty.get(i).toString());
             }
         }
         e.at = argsty;
@@ -168,10 +165,15 @@ public class SemanticVisitor implements ast.Visitor
 
         if (type == null)
         {
-            error();
-            System.out.println("Line " + e.lineNum +
-                    "you should declare is before use it.");
-            e.type = new Ast.Type.T() {};
+            error(e.lineNum, "you should declare \"" + e.id + "\" before use it.");
+            e.type = new Ast.Type.T()
+            {
+                @Override
+                public String toString()
+                {
+                    return "unknown";
+                }
+            };
             this.type = e.type;
         } else
         {
@@ -189,15 +191,12 @@ public class SemanticVisitor implements ast.Visitor
         this.visit(e.right);
         if (!this.type.toString().equals(lefty.toString()))
         {
-            error();
-            System.out.println("Line " + e.lineNum +
-                    " the type of left is" + lefty.toString() +
-                    ", but the type of right is" + this.type.toString());
+            error(e.lineNum, "compare expression" +
+                    " the type of left is " + lefty.toString() +
+                    ", but the type of right is " + this.type.toString());
         } else if (!new Ast.Type.Int().toString().equals(this.type.toString()))
         {
-            error();
-            System.out.println("Line " + e.lineNum +
-                    " only integer numbers can be compared.");
+            error(e.lineNum, "only integer numbers can be compared.");
         }
         this.type = new Ast.Type.Boolean();
     }
@@ -214,9 +213,7 @@ public class SemanticVisitor implements ast.Visitor
         this.visit(e.exp);
         if (!this.type.toString().equals(new Ast.Type.Boolean().toString()))
         {
-            error();
-            System.out.println("Line " + e.lineNum +
-                    " the exp cannot calculate to a boolean.");
+            error(e.lineNum, "the exp cannot calculate to a boolean.");
         }
         this.type = new Ast.Type.Boolean();
     }
@@ -235,15 +232,12 @@ public class SemanticVisitor implements ast.Visitor
         this.visit(e.right);
         if (!this.type.toString().equals(lefty.toString()))
         {
-            error();
-            System.out.println("Line " + e.lineNum +
-                    " the type of left is" + lefty.toString() +
-                    ", but the type of right is" + this.type.toString());
+            error(e.lineNum, "sub expression" +
+                    " the type of left is " + lefty.toString() +
+                    ", but the type of right is " + this.type.toString());
         } else if (!new Ast.Type.Int().toString().equals(this.type.toString()))
         {
-            error();
-            System.out.println("Line " + e.lineNum +
-                    " only integer numbers can be subbed.");
+            error(e.lineNum, " only integer numbers can be subbed.");
         }
         this.type = new Ast.Type.Int();
     }
@@ -262,15 +256,12 @@ public class SemanticVisitor implements ast.Visitor
         this.visit(e.right);
         if (!this.type.toString().equals(lefty.toString()))
         {
-            error();
-            System.out.println("Line " + e.lineNum +
-                    " the type of left is" + lefty.toString() +
-                    ", but the type of right is" + this.type.toString());
+            error(e.lineNum, "times expression" +
+                    " the type of left is " + lefty.toString() +
+                    ", but the type of right is " + this.type.toString());
         } else if (!new Ast.Type.Int().toString().equals(this.type.toString()))
         {
-            error();
-            System.out.println("Line " + e.lineNum +
-                    " only integer numbers can be timed.");
+            error(e.lineNum, "only integer numbers can be timed.");
         }
         this.type = new Ast.Type.Int();
     }
@@ -291,11 +282,9 @@ public class SemanticVisitor implements ast.Visitor
         s.type = this.type;
         if (!this.type.toString().equals(idty.toString()))
         {
-            error();
-            System.out.println("Line " + s.lineNum +
-                    " the type of id is" + idty.toString() +
-                    ", but the type of expression is" + this.type.toString() +
-                    ". Assign failed!");
+            error(s.lineNum, "the type of \"" + s.id + "\" is " + idty.toString() +
+                    ", but the type of expression is " + this.type.toString() +
+                    ". Assign failed.");
         }
     }
 
@@ -311,9 +300,7 @@ public class SemanticVisitor implements ast.Visitor
         this.visit(s.condition);
         if (!this.type.toString().equals(new Ast.Type.Boolean().toString()))
         {
-            error();
-            System.out.println("Line " + s.condition.lineNum +
-                    " the condition's type should be a boolean.");
+            error(s.condition.lineNum, "the condition's type should be a boolean.");
         }
         this.visit(s.then_stm);
         this.visit(s.else_stm);
@@ -325,9 +312,7 @@ public class SemanticVisitor implements ast.Visitor
         this.visit(s.exp);
         if (!this.type.toString().equals(new Ast.Type.Int().toString()))
         {
-            error();
-            System.out.println("Line " + s.exp.lineNum +
-                    " the exp must be a integer or can be calculate to an integer");
+            error(s.exp.lineNum, "the exp must be a integer or can be calculate to an integer.");
         }
     }
 
@@ -337,9 +322,7 @@ public class SemanticVisitor implements ast.Visitor
         this.visit(s.condition);
         if (!this.type.toString().equals(new Ast.Type.Boolean().toString()))
         {
-            error();
-            System.out.println("Line " + s.condition.lineNum +
-                    " the condition's type should be a boolean.");
+            error(s.condition.lineNum, "the condition's type should be a boolean.");
         }
         this.visit(s.body);
     }
@@ -353,10 +336,8 @@ public class SemanticVisitor implements ast.Visitor
         this.visit(m.retExp);
         if (!this.type.toString().equals(m.retType.toString()))
         {
-            error();
-            System.out.println("Line " + m.retExp.lineNum +
-                    "the return expression's type is not match the method " +
-                    m.id + " declared.");
+            error(m.retExp.lineNum, "the return expression's type is not match the method \"" +
+                    m.id + "\" declared.");
         }
     }
 
