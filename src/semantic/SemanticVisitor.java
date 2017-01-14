@@ -331,7 +331,7 @@ public class SemanticVisitor implements ast.Visitor
     public void visit(Ast.Method.MethodSingle m)
     {
         this.methodVarTable = new MethodVariableTable();
-        this.methodVarTable.put(m.formals, m.decs);
+        this.methodVarTable.put(m.formals, m.locals);
         m.stms.forEach(this::visit);
         this.visit(m.retExp);
         if (!this.type.toString().equals(m.retType.toString()))
@@ -375,7 +375,7 @@ public class SemanticVisitor implements ast.Visitor
             {
                 Ast.Method.MethodSingle m = ((Ast.Method.MethodSingle) method);
                 this.classTable.putMethodToClass(cla.id, m.id,
-                        new MethodType(m.retType, m.decs));
+                        new MethodType(m.retType, m.formals));
             }
         }
 

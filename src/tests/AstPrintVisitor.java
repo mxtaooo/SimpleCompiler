@@ -241,7 +241,7 @@ public class AstPrintVisitor implements ast.Visitor
         this.printSpaces();
         System.out.println("{");
         this.indent();
-        for (Ast.Dec.T dec : m.decs)
+        for (Ast.Dec.T dec : m.locals)
         {
             this.printSpaces();
             this.visit(dec);

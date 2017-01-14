@@ -321,20 +321,20 @@ public class Ast
             public Type.T retType;
             public String id;
             public java.util.LinkedList<Dec.T> formals;
-            public java.util.LinkedList<Dec.T> decs;
+            public java.util.LinkedList<Dec.T> locals;
             public java.util.LinkedList<Stm.T> stms;
             public Exp.T retExp;
 
             public MethodSingle(Type.T retType, String id,
                                 java.util.LinkedList<Dec.T> formals,
-                                java.util.LinkedList<Dec.T> decs,
+                                java.util.LinkedList<Dec.T> locals,
                                 java.util.LinkedList<Stm.T> stms,
                                 Exp.T retExp)
             {
                 this.retType = retType;
                 this.id = id;
                 this.formals = formals;
-                this.decs = decs;
+                this.locals = locals;
                 this.stms = stms;
                 this.retExp = retExp;
             }
