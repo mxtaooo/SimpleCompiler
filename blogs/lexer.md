@@ -153,8 +153,7 @@ class Test
 * 如果发现文法错误，那么立即报告错误并给出相应提示
 * 此过程中未尝试错误恢复，发现任何未定义符号/串，词法分析器拒绝继续执行
 
-例如，对于上文的程序样例中第6行 `print(new Test().Compute(10));   // just a print statement`   
-词法分析后的Token流是
+例如，对于上文的程序样例中第6行 `print(new Test().Compute(10));   // just a print statement` 词法分析后的Token流是
 
 ```text
 Token_Print : at line 6
