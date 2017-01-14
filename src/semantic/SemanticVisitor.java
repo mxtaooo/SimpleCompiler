@@ -204,7 +204,20 @@ public class SemanticVisitor implements ast.Visitor
     @Override
     public void visit(Ast.Exp.NewObject e)
     {
-        this.type = new Ast.Type.ClassType(e.id);
+        if (this.classTable.getClassBinding(e.id) != null)
+            this.type = new Ast.Type.ClassType(e.id);
+        else
+        {
+            error(e.lineNum, "cannot find the declaration of class \"" + e.id + "\".");
+            this.type = new Ast.Type.T()
+            {
+                @Override
+                public String toString()
+                {
+                    return "unknown class";
+                }
+            };
+        }
     }
 
     @Override
@@ -280,7 +293,8 @@ public class SemanticVisitor implements ast.Visitor
         Ast.Type.T idty = this.type;
         this.visit(s.exp);
         s.type = this.type;
-        if (!this.type.toString().equals(idty.toString()))
+        //if (!this.type.toString().equals(idty.toString()))
+        if (!isMatch(idty, this.type))
         {
             error(s.lineNum, "the type of \"" + s.id + "\" is " + idty.toString() +
                     ", but the type of expression is " + this.type.toString() +
@@ -312,7 +326,7 @@ public class SemanticVisitor implements ast.Visitor
         this.visit(s.exp);
         if (!this.type.toString().equals(new Ast.Type.Int().toString()))
         {
-            error(s.exp.lineNum, "the exp must be a integer or can be calculate to an integer.");
+            error(s.exp.lineNum, "the expression in \"print()\" must be a integer or can be calculate to an integer.");
         }
     }
 
@@ -334,7 +348,8 @@ public class SemanticVisitor implements ast.Visitor
         this.methodVarTable.put(m.formals, m.locals);
         m.stms.forEach(this::visit);
         this.visit(m.retExp);
-        if (!this.type.toString().equals(m.retType.toString()))
+        // if (!this.type.toString().equals(m.retType.toString()))
+        if (!isMatch(m.retType, this.type))
         {
             error(m.retExp.lineNum, "the return expression's type is not match the method \"" +
                     m.id + "\" declared.");
