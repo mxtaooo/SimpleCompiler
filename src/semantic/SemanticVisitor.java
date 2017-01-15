@@ -2,6 +2,7 @@ package semantic;
 
 import ast.Ast;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 
 
@@ -14,6 +15,8 @@ public class SemanticVisitor implements ast.Visitor
     private MethodVariableTable methodVarTable;
     private String currentClass;
     private Ast.Type.T type;
+
+    private HashSet<String> curMthLocals; //current method locals
 
     public SemanticVisitor()
     {
@@ -68,14 +71,12 @@ public class SemanticVisitor implements ast.Visitor
         Ast.Type.T lefty = this.type;
         this.visit(e.right);
         if (!this.type.toString().equals(lefty.toString()))
-        {
             error(e.lineNum, "add expression" +
                     " the type of left is " + lefty.toString() +
                     ", but the type of right is " + this.type.toString());
-        } else if (!new Ast.Type.Int().toString().equals(this.type.toString()))
-        {
+        else if (!new Ast.Type.Int().toString().equals(this.type.toString()))
             error(e.lineNum, " only integer numbers can be added.");
-        }
+
         this.type = new Ast.Type.Int();
     }
 
@@ -86,14 +87,12 @@ public class SemanticVisitor implements ast.Visitor
         Ast.Type.T lefty = this.type;
         this.visit(e.right);
         if (!this.type.toString().equals(lefty.toString()))
-        {
             error(e.lineNum, "and expression" +
                     " the type of left is " + lefty.toString() +
                     ", but the type of right is " + this.type.toString());
-        } else if (!new Ast.Type.Boolean().toString().equals(this.type.toString()))
-        {
+        else if (!new Ast.Type.Boolean().toString().equals(this.type.toString()))
             error(e.lineNum, " only integer numbers can be added.");
-        }
+
         this.type = new Ast.Type.Boolean();
     }
 
@@ -122,26 +121,23 @@ public class SemanticVisitor implements ast.Visitor
         }
 
         LinkedList<Ast.Type.T> argsty = new LinkedList<>();
-        for (Ast.Exp.T arg : e.args)
+        e.args.forEach(arg ->
         {
             this.visit(arg);
             argsty.addLast(this.type);
-        }
+        });
 
         MethodType mty = this.classTable.getMethodType(expType.id, e.id);
         if (mty.argsType.size() != argsty.size())
-        {
             error(e.lineNum, "the count of arguments is not match.");
-        }
+
         for (int i = 0; i < mty.argsType.size(); i++)
-        {
             if (!isMatch(((Ast.Dec.DecSingle) mty.argsType.get(i)).type, argsty.get(i)))
-            {
                 error(e.args.get(i).lineNum, "the parameter " + (i + 1) +
                         " needs a " + ((Ast.Dec.DecSingle) mty.argsType.get(i)).type.toString() +
                         ", but got a " + argsty.get(i).toString());
-            }
-        }
+
+
         e.at = argsty;
         this.type = mty.retType;
     }
@@ -156,12 +152,16 @@ public class SemanticVisitor implements ast.Visitor
     public void visit(Ast.Exp.Id e)
     {
         Ast.Type.T type = this.methodVarTable.get(e.id);
+        boolean isField = type != null;
         String className = currentClass;
         while (type == null && className != null)
         {
             type = this.classTable.getFieldType(className, e.id);
             className = this.classTable.getClassBinding(className).base;
         }
+
+        if (this.curMthLocals.contains(e.id))
+            error(e.lineNum, "you should assign \"" + e.id + "\" a value before use it.");
 
         if (type == null)
         {
@@ -177,7 +177,7 @@ public class SemanticVisitor implements ast.Visitor
             this.type = e.type;
         } else
         {
-            e.isField = true;
+            e.isField = isField;
             e.type = type;
             this.type = type;
         }
@@ -195,9 +195,8 @@ public class SemanticVisitor implements ast.Visitor
                     " the type of left is " + lefty.toString() +
                     ", but the type of right is " + this.type.toString());
         } else if (!new Ast.Type.Int().toString().equals(this.type.toString()))
-        {
             error(e.lineNum, "only integer numbers can be compared.");
-        }
+
         this.type = new Ast.Type.Boolean();
     }
 
@@ -225,9 +224,8 @@ public class SemanticVisitor implements ast.Visitor
     {
         this.visit(e.exp);
         if (!this.type.toString().equals(new Ast.Type.Boolean().toString()))
-        {
             error(e.lineNum, "the exp cannot calculate to a boolean.");
-        }
+
         this.type = new Ast.Type.Boolean();
     }
 
@@ -244,14 +242,13 @@ public class SemanticVisitor implements ast.Visitor
         Ast.Type.T lefty = this.type;
         this.visit(e.right);
         if (!this.type.toString().equals(lefty.toString()))
-        {
             error(e.lineNum, "sub expression" +
                     " the type of left is " + lefty.toString() +
                     ", but the type of right is " + this.type.toString());
-        } else if (!new Ast.Type.Int().toString().equals(this.type.toString()))
-        {
+        else if (!new Ast.Type.Int().toString().equals(this.type.toString()))
+
             error(e.lineNum, " only integer numbers can be subbed.");
-        }
+
         this.type = new Ast.Type.Int();
     }
 
@@ -268,14 +265,12 @@ public class SemanticVisitor implements ast.Visitor
         Ast.Type.T lefty = this.type;
         this.visit(e.right);
         if (!this.type.toString().equals(lefty.toString()))
-        {
             error(e.lineNum, "times expression" +
                     " the type of left is " + lefty.toString() +
                     ", but the type of right is " + this.type.toString());
-        } else if (!new Ast.Type.Int().toString().equals(this.type.toString()))
-        {
+        else if (!new Ast.Type.Int().toString().equals(this.type.toString()))
             error(e.lineNum, "only integer numbers can be timed.");
-        }
+
         this.type = new Ast.Type.Int();
     }
 
@@ -288,18 +283,21 @@ public class SemanticVisitor implements ast.Visitor
     @Override
     public void visit(Ast.Stm.Assign s)
     {
+        this.visit(s.exp);
+        s.type = this.type;
+
+        if (this.curMthLocals.contains(s.id))
+            this.curMthLocals.remove(s.id);
+
         Ast.Exp.Id id = new Ast.Exp.Id(s.id, s.lineNum);
         this.visit(id);
         Ast.Type.T idty = this.type;
-        this.visit(s.exp);
-        s.type = this.type;
         //if (!this.type.toString().equals(idty.toString()))
-        if (!isMatch(idty, this.type))
-        {
+        if (!isMatch(idty, s.type))
             error(s.lineNum, "the type of \"" + s.id + "\" is " + idty.toString() +
                     ", but the type of expression is " + this.type.toString() +
                     ". Assign failed.");
-        }
+
     }
 
     @Override
@@ -313,9 +311,9 @@ public class SemanticVisitor implements ast.Visitor
     {
         this.visit(s.condition);
         if (!this.type.toString().equals(new Ast.Type.Boolean().toString()))
-        {
-            error(s.condition.lineNum, "the condition's type should be a boolean.");
-        }
+            error(s.condition.lineNum,
+                    "the condition's type should be a boolean.");
+
         this.visit(s.then_stm);
         this.visit(s.else_stm);
     }
@@ -325,9 +323,9 @@ public class SemanticVisitor implements ast.Visitor
     {
         this.visit(s.exp);
         if (!this.type.toString().equals(new Ast.Type.Int().toString()))
-        {
-            error(s.exp.lineNum, "the expression in \"print()\" must be a integer or can be calculate to an integer.");
-        }
+            error(s.exp.lineNum,
+                    "the expression in \"print()\" must be a integer " +
+                            "or can be calculate to an integer.");
     }
 
     @Override
@@ -335,9 +333,8 @@ public class SemanticVisitor implements ast.Visitor
     {
         this.visit(s.condition);
         if (!this.type.toString().equals(new Ast.Type.Boolean().toString()))
-        {
             error(s.condition.lineNum, "the condition's type should be a boolean.");
-        }
+
         this.visit(s.body);
     }
 
@@ -346,14 +343,16 @@ public class SemanticVisitor implements ast.Visitor
     {
         this.methodVarTable = new MethodVariableTable();
         this.methodVarTable.put(m.formals, m.locals);
+        this.curMthLocals = new HashSet<>();
+        m.locals.forEach(local -> this.curMthLocals.add(((Ast.Dec.DecSingle) local).id));
         m.stms.forEach(this::visit);
         this.visit(m.retExp);
         // if (!this.type.toString().equals(m.retType.toString()))
         if (!isMatch(m.retType, this.type))
-        {
-            error(m.retExp.lineNum, "the return expression's type is not match the method \"" +
-                    m.id + "\" declared.");
-        }
+            error(m.retExp.lineNum,
+                    "the return expression's type is not match the method \"" +
+                            m.id + "\" declared.");
+
     }
 
     @Override
@@ -381,17 +380,15 @@ public class SemanticVisitor implements ast.Visitor
         {
             Ast.Class.ClassSingle cla = ((Ast.Class.ClassSingle) c);
             this.classTable.putClassBinding(cla.id, new ClassBinding(cla.base));
-            for (Ast.Dec.T field : cla.fields)
-            {
-                this.classTable.putFieldToClass(cla.id, ((Ast.Dec.DecSingle) field).id,
-                        ((Ast.Dec.DecSingle) field).type);
-            }
-            for (Ast.Method.T method : cla.methods)
-            {
-                Ast.Method.MethodSingle m = ((Ast.Method.MethodSingle) method);
-                this.classTable.putMethodToClass(cla.id, m.id,
-                        new MethodType(m.retType, m.formals));
-            }
+
+            cla.fields.forEach(field -> this.classTable.putFieldToClass(cla.id,
+                    ((Ast.Dec.DecSingle) field).id,
+                    ((Ast.Dec.DecSingle) field).type));
+
+            cla.methods.forEach(method -> this.classTable.putMethodToClass(cla.id,
+                    ((Ast.Method.MethodSingle) method).id,
+                    new MethodType(((Ast.Method.MethodSingle) method).retType,
+                            ((Ast.Method.MethodSingle) method).formals)));
         }
 
         this.visit(p.mainClass);
