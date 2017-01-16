@@ -8,7 +8,7 @@
 
 按照函数式定义，一个**数学函数**接受**一个参数**，返回**一个值**，那么当有一个函数，要接受多个参数的时候要怎么做？这就要Currying了。任意一个多参数的函数，都可以被重写成一个单参数的函数串。举例如下：
 
-```Fsharp
+```fsharp
 // F# (Functional programming language)
 // declare a method, its name is func, accept two parameters "x" and "y", return the sum of them
 let func x y = x + y;
@@ -19,8 +19,8 @@ let func = fun x y -> x + y;
 
 当这段代码被编译的时候，就会被自动重写成这种形式
 
-```Fsharp
-lex func = fun x -> fun y -> x + y;
+```fsharp
+let func = fun x -> fun y -> x + y;
 ```
 
 在函数式程序里面只有值的概念，这个值主要分两类，值和函数值。被重写后， `func` 变成了接受一个参数 `x` ，返回一个函数，返回的函数接受一个参数 `y` ，把 `x + y` 的结果作为返回值。
@@ -37,7 +37,7 @@ lex func = fun x -> fun y -> x + y;
 
 首先观察主流的面向对象语言中Lambda表达式的使用情况。
 
-```Csharp
+```csharp
 // C#: lambda expression compile to an anonymous method, then assign to a delegate
 // the type of the func is Func<int, int, int>
 // implicit type declaration
@@ -84,7 +84,7 @@ int func(int x, int y)
 
 我们计划为本程序扩展Lambda表达式支持,用于方法声明
 
-```Csharp
+```csharp
 
 // original method declaration way
 int Func(int x, int y)
@@ -143,7 +143,7 @@ int Func = x => x + 1;
 
 下面从两个相似的例子来讨论C#(C# 6)和Java(Java 8)中的类型推断。
 
-```Csharp
+```csharp
 class Person
 {
     public string Name {get; private set;}
@@ -220,6 +220,12 @@ class MainClass
                 this.name = name;
                 this.score = score;
             }
+
+            @Override
+            public String toString()
+            {
+                return this.name + ":" +this.score;
+            }
         }
         // in java 6, we should write new ArrayList<Person>()
         // but it's really type inference?
@@ -240,7 +246,7 @@ class MainClass
         persons.stream()
                .filter(p -> p.Age > 10)
                .map(p -> new TemClass(p.Name, p.Score))
-               .forEach(p -> System.out.println(p.name+":"+p.score));
+               .forEach(System.out::println); // method reference
     }
 }
 ```
