@@ -1,5 +1,41 @@
 # Bad Things
 
+## In Language Grammar
+
+### 问题描述
+
+在本程序语言中，我们对于method的文法定义是
+
+```text
+ MethodDec -> Type Id (FormalList)
+              { VarDec* Statement* return Exp;}
+```
+
+这就意味着我们的方法只能是单返回语句，而且必须放在最后，因此如下的几种状况是不合法的
+
+```java
+int Div(int num, int target)
+{
+    while(num > 0)
+    {
+        if (num * 10 < target )
+            return num;
+        else
+            num = num - 1;
+    }
+}
+
+int Compute(int a, int b, boolean switch)
+{
+    if (switch)
+        return a;
+    else
+        return b;
+}
+```
+
+很显然，这个问题大大限制了我们的程序的表达能力。
+
 ## ~~In Parser~~
 
 ### 问题描述
