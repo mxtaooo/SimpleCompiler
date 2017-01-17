@@ -295,7 +295,7 @@ public class SemanticVisitor implements ast.Visitor
         //if (!this.type.toString().equals(idty.toString()))
         if (!isMatch(idty, s.type))
             error(s.lineNum, "the type of \"" + s.id + "\" is " + idty.toString() +
-                    ", but the type of expression is " + this.type.toString() +
+                    ", but the type of expression is " + s.type.toString() +
                     ". Assign failed.");
 
     }
