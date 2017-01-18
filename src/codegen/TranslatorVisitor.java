@@ -21,7 +21,7 @@ public class TranslatorVisitor implements ast.Visitor
     private Method.MethodSingle method;
     private codegen.ast.Ast.Class.ClassSingle classs;
     private MainClass.MainClassSingle mainClass;
-    private Program.ProgramSingle prog;
+    public Program.ProgramSingle prog;
 
     public TranslatorVisitor()
     {
@@ -64,8 +64,7 @@ public class TranslatorVisitor implements ast.Visitor
     {
         this.visit(d.type);
         this.dec = new Dec.DecSingle(this.type, d.id);
-        //if (this.indexTable != null)
-        // but how about the field
+        if (this.indexTable != null) // if it is field
         this.indexTable.put(d.id, index++);
     }
 
@@ -238,12 +237,15 @@ public class TranslatorVisitor implements ast.Visitor
     public void visit(Ast.Stm.If s)
     {
         Label l = new Label();
+        Label r = new Label();
         this.visit(s.condition);
         emit(new Stm.Ldc(1));
         emit(new Stm.Ificmplt(l));
         this.visit(s.then_stm);
+        emit(new Stm.Goto(r));
         emit(new Stm.LabelJ(l));
         this.visit(s.else_stm);
+        emit(new Stm.LabelJ(r));
     }
 
     @Override

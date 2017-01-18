@@ -153,7 +153,7 @@ public class SemanticVisitor implements ast.Visitor
     public void visit(Ast.Exp.Id e)
     {
         Ast.Type.T type = this.methodVarTable.get(e.id);
-        boolean isField = type != null;
+        boolean isField = type == null;
         String className = currentClass;
         while (type == null && className != null)
         {
