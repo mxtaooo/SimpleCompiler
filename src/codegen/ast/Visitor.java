@@ -23,7 +23,13 @@ public interface Visitor
     // Stm
     default void visit(Ast.Stm.T s)
     {
-        if (s instanceof Ast.Stm.Goto)
+        if (s instanceof Ast.Stm.Aload)
+            this.visit(((Ast.Stm.Aload) s));
+        else if (s instanceof Ast.Stm.Areturn)
+            this.visit(((Ast.Stm.Areturn) s));
+        else if (s instanceof Ast.Stm.Astore)
+            this.visit(((Ast.Stm.Astore) s));
+        else if (s instanceof Ast.Stm.Goto)
             this.visit(((Ast.Stm.Goto) s));
         else if (s instanceof Ast.Stm.Getfield)
             this.visit(((Ast.Stm.Getfield) s));
@@ -54,6 +60,12 @@ public interface Visitor
         else // if (s instanceof Ast.Stm.Putfield)
             this.visit(((Ast.Stm.Putfield) s));
     }
+
+    void visit(Ast.Stm.Aload s);
+
+    void visit(Ast.Stm.Areturn s);
+
+    void visit(Ast.Stm.Astore s);
 
     void visit(Ast.Stm.Goto s);
 

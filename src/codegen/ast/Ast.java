@@ -56,6 +56,28 @@ public class Ast
     {
         public static abstract class T {}
 
+        public static class Aload extends T
+        {
+            public int index;
+
+            public Aload(int index)
+            {
+                this.index = index;
+            }
+        }
+
+        public static class Areturn extends T {}
+
+        public static class Astore extends T
+        {
+            public int index;
+
+            public Astore(int index)
+            {
+                this.index = index;
+            }
+        }
+
         public static class Goto extends T
         {
             public Label l;
@@ -89,7 +111,15 @@ public class Ast
             }
         }
 
-        public static class Iload extends T {}
+        public static class Iload extends T
+        {
+            public int index;
+
+            public Iload(int index)
+            {
+                this.index = index;
+            }
+        }
 
         public static class Imul extends T {}
 
