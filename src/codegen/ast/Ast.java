@@ -13,7 +13,7 @@ public class Ast
 
         public static class ClassType extends T
         {
-            String id;
+            public String id;
 
             public ClassType(String id)
             {
@@ -155,7 +155,7 @@ public class Ast
 
         public static class LabelJ extends T
         {
-            Label label;
+            public Label label;
 
             public LabelJ(Label label)
             {
