@@ -139,6 +139,7 @@ public class SemanticVisitor implements ast.Visitor
 
 
         e.at = argsty;
+        e.rt = mty.retType;
         this.type = mty.retType;
     }
 

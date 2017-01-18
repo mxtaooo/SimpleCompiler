@@ -112,6 +112,7 @@ public class Ast
             public java.util.LinkedList<T> args;
             public String type; // type of first field "exp"
             public java.util.LinkedList<Type.T> at; // arg's type
+            public Type.T rt;
 
             public Call(T exp, String id, java.util.LinkedList<T> args, int lineNum)
             {
