@@ -44,5 +44,12 @@ public class CodeGeneratorTest
 
         ByteCodeGenerator generator = new ByteCodeGenerator();
         generator.visit(translator.prog);
+
+        jasmin.Main.main(new String[]{translator.prog.mainClass.id + ".il"});
+
+        for (codegen.ast.Ast.Class.ClassSingle cla : translator.prog.classes)
+        {
+            jasmin.Main.main(new String[]{cla.id + ".il"});
+        }
     }
 }
