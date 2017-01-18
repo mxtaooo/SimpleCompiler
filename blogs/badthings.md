@@ -143,3 +143,15 @@ class Instance
 对于 `C#` 未测试其旧版编译器 `csc.exe`
 
 看来这个问题确实无解，或者说，由于处在“外界”，有很多方式能对其产生副作用，编译器根本没办法、没有足够可靠的信息确定每个字段的赋值状态，只有把程序运行一下才能确定，但那是运行时的事情了，编译期根本无从下手。这就取决于程序员自己的把握，编译器并没有那么强的能力，只能尽可能的做检查，给程序员尽可能多的提示，作为检查/修改/重构代码的依据。
+
+
+## In Code Generation
+
+Java Virtual Machine Specification - 2.3.4 The `boolean` type
+> Although the Java Virtual Machine defines a boolean type, it only provides
+very limited support for it. There are no Java Virtual Machine instructions solely
+dedicated to operations on boolean values. Instead, expressions in the Java
+programming language that operate on boolean values are compiled to use values
+of the Java Virtual Machine int data type.
+
+我们这个程序加入了`boolean`这一类型，然后强调了它与`int`类型之间的区别，编译器拒绝了双方任何的直接互操作，但是到了代码生成阶段，两个又变成了同一个类型`int`。虽然这里放在了badthings里，但是个人认为这并不是个错误的决定，看上去绕了一个大圈子，但是这样对程序的安全合法做了最大的保证，类型检查能通过的，就一定是合法的。如果允许`boolean`类型和`int`类型之间的互操作，就要引入一些的前提/隐式声明/约定之类的东西，增加的语言复杂度，对程序安全也带来了隐患。
