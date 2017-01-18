@@ -15,7 +15,7 @@ public class SemanticVisitor implements ast.Visitor
     private MethodVariableTable methodVarTable;
     private String currentClass;
     private Ast.Type.T type;
-
+    private boolean isOk; // the ast is correct?
     private HashSet<String> curMthLocals; //current method locals
 
     public SemanticVisitor()
@@ -24,10 +24,17 @@ public class SemanticVisitor implements ast.Visitor
         this.methodVarTable = new MethodVariableTable();
         this.currentClass = null;
         this.type = null;
+        this.isOk = true;
+    }
+
+    public boolean isOK()
+    {
+        return this.isOk;
     }
 
     private void error(int lineNum, String msg)
     {
+        this.isOk = false;
         System.out.println("Error: Line " + lineNum + " " + msg);
     }
 

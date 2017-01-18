@@ -40,6 +40,10 @@ public class SimpleCompiler
         SemanticVisitor checker = new SemanticVisitor();
         checker.visit(prog);
 
+        // if the program is correct, we generate code for it
+        if (!checker.isOK())
+            return;
+
         TranslatorVisitor translator = new TranslatorVisitor();
         translator.visit(prog);
 
