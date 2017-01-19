@@ -155,3 +155,9 @@ programming language that operate on boolean values are compiled to use values
 of the Java Virtual Machine int data type.
 
 我们这个程序加入了`boolean`这一类型，然后强调了它与`int`类型之间的区别，编译器拒绝了双方任何的直接互操作，但是到了代码生成阶段，两个又变成了同一个类型`int`。虽然这里放在了badthings里，但是个人认为这并不是个错误的决定，看上去绕了一个大圈子，但是这样对程序的安全合法做了最大的保证，类型检查能通过的，就一定是合法的。如果允许`boolean`类型和`int`类型之间的互操作，就要引入一些的前提/隐式声明/约定之类的东西，增加的语言复杂度，对程序安全也带来了隐患。
+
+## Method Overload
+
+我们的程序支持了的方法/字段的同名覆盖，但是这样的话我们应当给出相应的提示/警告，告知用户
+
+此外，同时应该修改方法的签名方式，用于支持之后要扩展出的方法重载
