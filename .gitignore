@@ -1,3 +1,7 @@
+# Customer's Ignore Files
+*.soo
+*.il
+
 *.class
 
 # Mobile Tools for Java (J2ME)
