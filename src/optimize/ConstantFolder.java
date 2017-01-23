@@ -45,7 +45,8 @@ public class ConstantFolder implements ast.Visitor
                 this.lastExp = new Ast.Exp.Num(
                         temLeft.num + ((Ast.Exp.Num) this.lastExp).num,
                         this.lastExp.lineNum);
-        }
+            else this.lastExp = new Ast.Exp.Add(temLeft, this.lastExp, this.lastExp.lineNum);
+        } else this.lastExp = e;
     }
 
     @Override
@@ -60,7 +61,11 @@ public class ConstantFolder implements ast.Visitor
                 this.lastExp = temLeft && this.lastExp instanceof Ast.Exp.True
                         ? new Ast.Exp.True(this.lastExp.lineNum)
                         : new Ast.Exp.False(this.lastExp.lineNum);
-        }
+            else this.lastExp = new Ast.Exp.And(temLeft
+                    ? new Ast.Exp.True(this.lastExp.lineNum)
+                    : new Ast.Exp.False(this.lastExp.lineNum),
+                    this.lastExp, this.lastExp.lineNum);
+        } else this.lastExp = e;
     }
 
     @Override
@@ -100,13 +105,14 @@ public class ConstantFolder implements ast.Visitor
                 this.lastExp = temLeft.num < ((Ast.Exp.Num) this.lastExp).num
                         ? new Ast.Exp.True(this.lastExp.lineNum)
                         : new Ast.Exp.False(this.lastExp.lineNum);
-        }
+            else this.lastExp = new Ast.Exp.LT(temLeft, this.lastExp, this.lastExp.lineNum);
+        } else this.lastExp = e;
     }
 
     @Override
     public void visit(Ast.Exp.NewObject e)
     {
-
+        this.lastExp = e;
     }
 
     @Override
@@ -137,7 +143,8 @@ public class ConstantFolder implements ast.Visitor
                 this.lastExp = new Ast.Exp.Num(
                         temLeft.num - ((Ast.Exp.Num) this.lastExp).num,
                         this.lastExp.lineNum);
-        }
+            else this.lastExp = new Ast.Exp.Sub(temLeft, this.lastExp, this.lastExp.lineNum);
+        } else this.lastExp = e;
     }
 
     @Override
@@ -158,7 +165,8 @@ public class ConstantFolder implements ast.Visitor
                 this.lastExp = new Ast.Exp.Num(
                         temLeft.num * ((Ast.Exp.Num) this.lastExp).num,
                         this.lastExp.lineNum);
-        }
+            else this.lastExp = new Ast.Exp.Times(temLeft, this.lastExp, this.lastExp.lineNum);
+        } else this.lastExp = e;
     }
 
     @Override
