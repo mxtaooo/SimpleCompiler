@@ -60,6 +60,66 @@ print
 
 ## Code Translation
 
-有了上文的“完善”的指令集(对于我们这个程序来说)，我们接下来的工作便是将树状的AST转换成线性的指令。这里的转换主要关注的方法中的真正“干活”的代码，
+有了上文的“完善”的指令集(对于我们这个程序来说)，我们接下来的工作便是将树状的AST转换成线性的指令。这里的转换主要关注的方法中的真正“干活”的代码，就是方法体内部的工作代码。下面通过一个例子展示具体工作。
+
+```java
+class TestMain
+{
+    // This is the entry point of the program
+    void main()
+    {
+        print(new Test().Compute(10));   // just a print statement
+    }
+}
+class Test
+{
+    int Compute(int num)
+    {
+        int total;
+        if ( num < 1)
+            total = 1;
+        else
+            total = num * (this.Compute(num-1));
+        return total;
+    }
+}
+```
+
+观察以上一段代码，我们主要关注`Compute`方法编译出的指令，而且给出了较详细的注释。
+
+```text
+.method public Compute(I)I
+.limit stack 4096 ; 栈调用深度，这个算法我们还没有实现，因此编译结果给出默认值 4096
+.limit locals 4 ; 共计有4个本地变量
+    ; num < 1 对于if语句中的判别式进行计算
+    iload 1     ; 从本地变量表中加载变量1的值(num)到栈上
+    ldc 1       ; 将整型数字1压入栈
+    if_icmplt Label_2 ;比较两个值，如果第一个值(num)小于整数1，跳转至Label_2
+    ldc 0       ; 将整数0压入栈(用于表示比较结果为false)
+    goto Label_3
+Label_2:
+    ldc 1       ; 将整数1压入栈(用于表示比较结果为真)
+Label_3:        ; 判别式计算完成
+    ldc 1
+    if_icmplt Label_0 ; 对于求值真假进行计算
+    ldc 1       ; 将整数1压入栈
+    istore 2    ; 将栈上的数字存入本地变量2
+    goto Label_1
+Label_0:
+    iload 1     ; 从本地变量表中加载变量1的值 (num)
+    aload 0     ; 从本地变量表中加载变量0的值 (this)
+    iload 1
+    ldc 1
+    isub
+    invokevirtual Test/Compute(I)I ; 调用实例方法(在指令参数处指出了方法的从属及签名)
+    imul
+    istore 2
+Label_1:
+    iload 2     ; 从本地变量表中加赞变量2的值
+    ireturn     ; 从方法返回。
+.end method
+```
 
 ## Jasmin - ASCII Instructions File to .class File
+
+最后的工作就是从字符形式的指令，由“汇编器”转换成二进制形式的.class文件，用于jvm的运行。此处我们采用了已经成熟的一个工具，[Jasmin](http://jasmin.sourceforge.net/)。
