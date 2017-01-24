@@ -2,6 +2,7 @@ package tests;
 
 import ast.Ast;
 import optimize.ConstantFolder;
+import optimize.UnUsedVarDel;
 import parser.Parser;
 import semantic.SemanticVisitor;
 
@@ -44,6 +45,9 @@ public class OptimizerTest
         // if the program is correct, we generate code for it
         if (!checker.isOK())
             return;
+
+        UnUsedVarDel varDeler = new UnUsedVarDel();
+        varDeler.visit(prog);
 
         ConstantFolder folder = new ConstantFolder();
         folder.visit(prog);
