@@ -2,6 +2,7 @@ package tests;
 
 import ast.Ast;
 import optimize.ConstantFolder;
+import optimize.UnReachableDel;
 import optimize.UnUsedVarDel;
 import parser.Parser;
 import semantic.SemanticVisitor;
@@ -51,6 +52,9 @@ public class OptimizerTest
 
         ConstantFolder folder = new ConstantFolder();
         folder.visit(prog);
+
+        UnReachableDel deler = new UnReachableDel();
+        deler.visit(prog);
 
         AstPrintVisitor printer = new AstPrintVisitor();
         printer.visit(prog);
