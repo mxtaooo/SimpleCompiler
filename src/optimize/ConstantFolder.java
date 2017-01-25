@@ -53,19 +53,21 @@ public class ConstantFolder implements ast.Visitor
     public void visit(Ast.Exp.And e)
     {
         this.visit(e.left);
-        if (isConstant())
-        {
-            boolean temLeft = this.lastExp instanceof Ast.Exp.True;
-            this.visit(e.right);
-            if (isConstant())
-                this.lastExp = temLeft && this.lastExp instanceof Ast.Exp.True
-                        ? new Ast.Exp.True(this.lastExp.lineNum)
-                        : new Ast.Exp.False(this.lastExp.lineNum);
-            else this.lastExp = new Ast.Exp.And(temLeft
-                    ? new Ast.Exp.True(this.lastExp.lineNum)
-                    : new Ast.Exp.False(this.lastExp.lineNum),
-                    this.lastExp, this.lastExp.lineNum);
-        } else this.lastExp = e;
+        Ast.Exp.T temLeft = this.lastExp;
+        this.visit(e.right);
+        Ast.Exp.T temRight = this.lastExp;
+
+        if (temLeft instanceof Ast.Exp.False
+                || temRight instanceof Ast.Exp.False)
+            this.lastExp = new Ast.Exp.False(e.lineNum);
+        else if (temLeft instanceof Ast.Exp.True
+                && temRight instanceof Ast.Exp.True)
+            this.lastExp = temLeft;
+        else if (temLeft instanceof Ast.Exp.True)
+            this.lastExp = temRight;
+        else if (temRight instanceof Ast.Exp.True)
+            this.lastExp = temLeft;
+        else this.lastExp = e;
     }
 
     @Override
@@ -123,6 +125,7 @@ public class ConstantFolder implements ast.Visitor
             this.lastExp = this.lastExp instanceof Ast.Exp.True
                     ? new Ast.Exp.False(this.lastExp.lineNum)
                     : new Ast.Exp.True(this.lastExp.lineNum);
+        else this.lastExp = e;
     }
 
     @Override
