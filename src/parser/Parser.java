@@ -219,6 +219,8 @@ public class Parser
             advance();
             Ast.Exp.T tem = parseAddSubExp();
             exp = isAdd ? new Ast.Exp.Add(exp, tem, exp.lineNum)
+                    : tem instanceof Ast.Exp.Num ? new Ast.Exp.Add(exp,
+                    new Ast.Exp.Num(-((Ast.Exp.Num) tem).num, tem.lineNum), tem.lineNum)
                     : new Ast.Exp.Sub(exp, tem, exp.lineNum);
         }
         return exp;
