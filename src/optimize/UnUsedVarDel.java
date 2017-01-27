@@ -153,7 +153,8 @@ public class UnUsedVarDel implements ast.Visitor
 
         this.unUsedArgs.forEach((uak, uao) ->
                 System.out.println("Warning: at line " + uao.lineNum + " : "
-                        + "the argument \"" + uak + "\" you have never used."));
+                        + "the argument \"" + uak + "\" of method \""
+                        + m.id + "\" you have never used."));
 
         this.unUsedLocals.forEach((ulk, ulo) ->
         {
