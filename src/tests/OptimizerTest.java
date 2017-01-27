@@ -2,6 +2,7 @@ package tests;
 
 import ast.Ast;
 import optimize.ConstantFolder;
+import optimize.DeadCodeDel;
 import optimize.UnReachableDel;
 import optimize.UnUsedVarDel;
 import parser.Parser;
@@ -55,6 +56,9 @@ public class OptimizerTest
 
         UnReachableDel deler = new UnReachableDel();
         deler.visit(prog);
+
+        DeadCodeDel deadDeler = new DeadCodeDel();
+        deadDeler.visit(prog);
 
         AstPrintVisitor printer = new AstPrintVisitor();
         printer.visit(prog);

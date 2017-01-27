@@ -30,97 +30,121 @@ public class DeadCodeDel implements ast.Visitor
     @Override
     public void visit(Ast.Exp.Add e)
     {
-
+        this.visit(e.left);
+        this.visit(e.right);
     }
 
     @Override
     public void visit(Ast.Exp.And e)
     {
-
+        this.visit(e.left);
+        this.visit(e.right);
     }
 
     @Override
     public void visit(Ast.Exp.Call e)
     {
-
+        this.visit(e.exp);
+        e.args.forEach(this::visit);
     }
 
     @Override
-    public void visit(Ast.Exp.False e)
-    {
-
-    }
+    public void visit(Ast.Exp.False e) {}
 
     @Override
     public void visit(Ast.Exp.Id e)
     {
-
+        if (this.localVars.contains(e.id))
+            this.localLiveness.add(e.id);
     }
 
     @Override
     public void visit(Ast.Exp.LT e)
     {
-
+        this.visit(e.left);
+        this.visit(e.right);
     }
 
     @Override
-    public void visit(Ast.Exp.NewObject e)
-    {
-
-    }
+    public void visit(Ast.Exp.NewObject e) {}
 
     @Override
     public void visit(Ast.Exp.Not e)
     {
-
+        this.visit(e.exp);
     }
 
     @Override
-    public void visit(Ast.Exp.Num e)
-    {
-
-    }
+    public void visit(Ast.Exp.Num e) {}
 
     @Override
     public void visit(Ast.Exp.Sub e)
     {
-
+        this.visit(e.left);
+        this.visit(e.right);
     }
 
     @Override
-    public void visit(Ast.Exp.This e)
-    {
-
-    }
+    public void visit(Ast.Exp.This e) {}
 
     @Override
     public void visit(Ast.Exp.Times e)
     {
-
+        this.visit(e.left);
+        this.visit(e.right);
     }
 
     @Override
-    public void visit(Ast.Exp.True e)
-    {
-
-    }
+    public void visit(Ast.Exp.True e) {}
 
     @Override
     public void visit(Ast.Stm.Assign s)
     {
-
+        if (this.localLiveness.contains(s.id))
+        {
+            this.localLiveness.remove(s.id);
+            this.visit(s.exp);
+            this.shouldDel = false;
+        } else
+            this.shouldDel = !this.curFields.contains(s.id);
     }
 
     @Override
     public void visit(Ast.Stm.Block s)
     {
-
+        for (int i = s.stms.size() - 1; i >= 0; i--)
+        {
+            this.visit(s.stms.get(i));
+            if (this.shouldDel)
+                s.stms.remove(i);
+        }
+        this.shouldDel = s.stms.size() == 0;
     }
 
     @Override
     public void visit(Ast.Stm.If s)
     {
+        HashSet<String> temOriginal = new HashSet<>();
+        this.localLiveness.forEach(temOriginal::add);
+        this.visit(s.then_stm);
+        if (this.shouldDel)
+            s.then_stm = null;
+        HashSet<String> _leftLiveness = this.localLiveness;
 
+        this.localLiveness = temOriginal;
+        this.visit(s.else_stm);
+        if (this.shouldDel)
+            s.else_stm = null;
+        _leftLiveness.forEach(this.localLiveness::add);
+
+        this.shouldDel = s.then_stm == null && s.then_stm == null;
+        if (this.shouldDel)
+        {
+            this.localLiveness = temOriginal;
+            return;
+        }
+        this.isAssign = false;
+        this.visit(s.condition);
     }
 
     @Override
@@ -134,13 +158,14 @@ public class DeadCodeDel implements ast.Visitor
     @Override
     public void visit(Ast.Stm.While s)
     {
-        //((Ast.Stm.Block) s.body).stms.forEach(this::visit);
+        HashSet<String> temOriginal = new HashSet<>();
+        this.localLiveness.forEach(temOriginal::add);
         this.visit(s.body);
-        if (!(s.body instanceof Ast.Stm.Block) && shouldDel)
-            s.body = null;
-        this.shouldDel = s.body == null
-                || (s.body instanceof Ast.Stm.Block
-                && ((Ast.Stm.Block) s.body).stms.size() == 0);
+        if (this.shouldDel) // this statement will be deleted totally
+        {
+            this.localLiveness = temOriginal;
+            return;         // so return is safe.
+        }
         this.isAssign = false;
         this.visit(s.condition);
     }
@@ -156,16 +181,12 @@ public class DeadCodeDel implements ast.Visitor
         this.isAssign = false;
         this.visit(m.retExp);
 
-        // LinkedList<Integer> delStms = new LinkedList<>();
-        for (int i = m.stms.size() - 1; i >= 0; i++)
+        for (int i = m.stms.size() - 1; i >= 0; i--)
         {
             this.visit(m.stms.get(i));
             if (this.shouldDel)
                 m.stms.remove(i);
-            // if (this.shouldDel)
-            //     delStms.add(i);
         }
-        // delStms.forEach(d -> m.stms.remove(d));
     }
 
     @Override
