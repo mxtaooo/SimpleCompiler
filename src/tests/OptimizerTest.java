@@ -1,10 +1,7 @@
 package tests;
 
 import ast.Ast;
-import optimize.ConstantFolder;
-import optimize.DeadCodeDel;
-import optimize.UnReachableDel;
-import optimize.UnUsedVarDel;
+import optimize.*;
 import parser.Parser;
 import semantic.SemanticVisitor;
 
@@ -59,6 +56,9 @@ public class OptimizerTest
 
         DeadCodeDel deadDeler = new DeadCodeDel();
         deadDeler.visit(prog);
+
+        ConstantAndCopyPropagation proper = new ConstantAndCopyPropagation();
+        proper.visit(prog);
 
         AstPrintVisitor printer = new AstPrintVisitor();
         printer.visit(prog);
