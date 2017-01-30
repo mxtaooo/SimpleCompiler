@@ -29,7 +29,16 @@ let func = fun x -> fun y -> x + y;
 
 我们面向的目标平台是JVM，如果要发挥Currying的全部优势，我们需要调用`java.util.funciton`包内直接支持的`Funciton<T, R>` `BiFunction<T, U, R>`等各个函数式编程接口，这个的前提是完整的泛型支持、匿名类对象、接口及其类对其的实现，步子太大。如果只是编译器做支持，内部转换成对泛型、接口的应用，那么编译器需要做强度很大的类型推断，比如有可能推断出`Funciton<Integer, Function<Integer,Function<Integer, Integer>>>` 这样超长嵌套的类型名，而这，仅仅是个3参数的方法而已，这个可以视时间是否足够再考虑支持。
 
-我们提到Currying的主要目的是，考虑支持在Currying过程中很好用的Lambda表达式，以及刻意Curry化的表达式写法
+我们提到Currying的主要目的是，考虑支持在Currying过程中很好用的Lambda表达式，~~以及刻意Curry化的表达式写法~~。
+
+### 修补
+
+刻意Curry化的表达式写法这不应该是程序员的工作，这是为了数学统一化而让编译器自动完成的工作，而不应当让程序员来迎合编译器而去做这项工作。尤其是这个工作编译器不是不能自行完成，因此添加这个工作实在是，画蛇添足。
+
+## Closure
+
+闭包的相关知识前提。
+
 
 ## Lambda Expression
 
@@ -134,6 +143,103 @@ int Func = x => x + 1;
 ```
 
 以上几个表达式，最终都将编译成一个普通的实例方法，但是我们应当注意到，没有类型声明的地方，我们需要进行类型推断，如下所述
+
+## Local Method
+
+考虑添加本地方法的语法扩展，编译结果为实例方法
+
+关于本地方法，考虑是否添加捕获外部变量的语法扩展，如果确认添加该扩展，内部应转换成内部类的实质，或者是匿名类的概念，之后为之生成单独的完善定义。
+
+那么此处我们先给出两处例子作为考虑的状况
+
+```csharp
+// local method whitout catching variables
+int Compute(int x)
+{
+    // local method normal way
+    bool IsPositive(int num)
+    {
+        return num > 0;
+    }
+    // in lambda way
+    bool IsPositive_lambda = num => num > 0?
+
+    if(IsPositive(x))
+        return x;
+    else return -x;
+}
+```
+
+关于以上这种本地方法，我们最终可以编译成为当前类的一个实例/静态方法，然后在内部转变成为对于实例/静态方法的调用。
+
+而它的编译后的“去糖化”表示将是
+
+```csharp
+int Compute(int x)
+{
+    if ($local_IsPositive(x))
+        return x;
+    else return -1;
+}
+
+// this method can be static
+// the method name contains special character to avoid confilicting with user's method name
+private (static) bool $local_IsPositive(int num)
+{
+    return num > 0?
+}
+```
+
+但是我们也可以允许该本地方法捕获本地变量，当然这样也扩展了上文Lambda表达式的使用场景。例如我们给出这样一个例子
+
+```csharp
+class MainClass
+{
+    int Compute(int[] nums, int index)
+    {
+        // local method in normal way
+        bool IsOutOfBound(int _index)
+        {
+            return _index >= nums.Length;
+        }
+        // in lambda way
+        bool IsOutOfBound_lambda = _index => _index >= nums.Length;
+
+        if (IsOutOfBound(index))
+            return 0;
+        else return nums[index];
+    }
+}
+```
+
+仔细观察以下发现，本地方法中间出现了一个我们没有声明过的变量`nums`，而且很显然，它必定是一个数组类型的。这个变量从哪里来？显然是在外部捕获的，那么该如何捕获？这似乎是一个问题。
+
+那么我们给出一种可能的编译后的“去糖化”结果，从而进行分析
+
+```csharp
+class MainClass
+{
+    int Compute(int[] nums, int index)
+    {
+        $InternalCalss obj = new $InternalCalss();
+        obj.nums = nums;
+        if (obj.IsOutOfBound(index))
+            return 0;
+        else return nums[index];
+    }
+}
+
+internal class $InternalCalss
+{
+    public int[] nums;
+    bool IsOutOfBound(int _index)
+    {
+        return _index >= nums.Length;
+    }
+}
+```
+
+很明显了，这个语法去糖化之后，转变成了对于外部类实例实例方法调用。其中，“带糖”版本的本地方法和其捕获的变量，构成了一个“Closure(闭包)”。
 
 ## Type Inference
 
@@ -264,11 +370,3 @@ class MainClass
 支持函数重载，简单来说，修改编译器内部对于方法的签名方式即可。我们目前的做法是使用方法名作为签名，只需修改此处，使用方法名和各参数类型作为签名，就能实现目前主流面向对象编程语言的重载策略。
 
 至于具体的重载决策方式，考完再考虑………………
-
-## Local Method
-
-考虑添加本地方法的语法扩展，编译结果为实例方法
-
-关于本地方法，考虑是否添加捕获外部变量的语法扩展，如果确认添加该扩展，内部应转换成内部类的实质，或者是匿名类的概念，之后为之生成单独的完善定义。
-
-先把字节码生成做完了之后考虑这个问题。
