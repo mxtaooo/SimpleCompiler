@@ -37,8 +37,7 @@ let func = fun x -> fun y -> x + y;
 
 ## Closure
 
-闭包的相关知识前提。
-
+闭包的相关知识前提，具体可参考下文Local Method后方的相关介绍。
 
 ## Lambda Expression
 
