@@ -7,9 +7,10 @@ import java.util.LinkedList;
 /**
  * Created by Mengxu on 2017/1/25.
  */
-public class UnReachableDel implements ast.Visitor
+public class UnReachableDel implements ast.Visitor, Optimizable
 {
     private Ast.Stm.T curStm;
+    private boolean isOptimizing;
 
     @Override
     public void visit(Ast.Type.Boolean t) {}
@@ -89,10 +90,12 @@ public class UnReachableDel implements ast.Visitor
     {
         if (s.condition instanceof Ast.Exp.True)
         {
+            this.isOptimizing = true;
             this.curStm = s.then_stm;
             this.visit(this.curStm);
         } else if (s.condition instanceof Ast.Exp.False)
         {
+            this.isOptimizing = true;
             this.curStm = s.else_stm;
             this.visit(this.curStm);
         } else this.curStm = s;
@@ -108,7 +111,10 @@ public class UnReachableDel implements ast.Visitor
     public void visit(Ast.Stm.While s)
     {
         if (s.condition instanceof Ast.Exp.False)
+        {
+            this.isOptimizing = true;
             this.curStm = null;
+        }
         else if (s.condition instanceof Ast.Exp.True)
         {
             System.out.println("Warning: at line " + s.lineNum
@@ -149,7 +155,14 @@ public class UnReachableDel implements ast.Visitor
     @Override
     public void visit(Ast.Program.ProgramSingle p)
     {
+        this.isOptimizing = false;
         this.visit(p.mainClass);
         p.classes.forEach(this::visit);
+    }
+
+    @Override
+    public boolean isOptimizing()
+    {
+        return this.isOptimizing;
     }
 }
