@@ -7,11 +7,12 @@ import java.util.Hashtable;
 /**
  * Created by Mengxu on 2017/1/24.
  */
-public class UnUsedVarDel implements ast.Visitor
+public class UnUsedVarDel implements ast.Visitor, Optimizable
 {
 
     private Hashtable<String, Ast.Dec.DecSingle> unUsedLocals;
     private Hashtable<String, Ast.Dec.DecSingle> unUsedArgs;
+    private boolean isOptimizing;
 
     @Override
     public void visit(Ast.Type.Boolean t) {}
@@ -151,16 +152,22 @@ public class UnUsedVarDel implements ast.Visitor
         m.stms.forEach(this::visit);
         this.visit(m.retExp);
 
+        this.isOptimizing = this.unUsedArgs.size() > 0
+                || this.unUsedLocals.size() > 0;
         this.unUsedArgs.forEach((uak, uao) ->
+        {
+            if (Optimizable.givesWarning)
                 System.out.println("Warning: at line " + uao.lineNum + " : "
                         + "the argument \"" + uak + "\" of method \""
-                        + m.id + "\" you have never used."));
+                        + m.id + "\" you have never used.");
+        });
 
         this.unUsedLocals.forEach((ulk, ulo) ->
         {
-            System.out.println("Warning: at line " + ulo.lineNum + " : "
-                    + "the local variable \"" + ulk + "\" you have never used."
-                    + " Now we delete it.");
+            if (Optimizable.givesWarning)
+                System.out.println("Warning: at line " + ulo.lineNum + " : "
+                        + "the local variable \"" + ulk + "\" you have never used."
+                        + " Now we delete it.");
             m.locals.remove(ulo);
         });
     }
@@ -177,6 +184,13 @@ public class UnUsedVarDel implements ast.Visitor
     @Override
     public void visit(Ast.Program.ProgramSingle p)
     {
+        this.isOptimizing = false;
         p.classes.forEach(this::visit);
+    }
+
+    @Override
+    public boolean isOptimizing()
+    {
+        return this.isOptimizing;
     }
 }
