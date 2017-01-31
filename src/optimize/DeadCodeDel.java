@@ -7,13 +7,14 @@ import java.util.HashSet;
 /**
  * Created by Mengxu on 2017/1/27.
  */
-public class DeadCodeDel implements ast.Visitor
+public class DeadCodeDel implements ast.Visitor, Optimizable
 {
     private HashSet<String> curFields;  // the fields of current class
     private HashSet<String> localVars;  // the local variables and formals in current method
     private HashSet<String> localLiveness;  // the living id in current statement
-    private boolean isAssign;   // current id is in the left of assign(true), or is being evaluated(false)
+    // private boolean isAssign;   // current id is in the left of assign(true), or is being evaluated(false)
     private boolean shouldDel;  // should delete current statement?
+    private boolean isOptimizing;
 
     @Override
     public void visit(Ast.Type.Boolean t) {}
@@ -116,7 +117,10 @@ public class DeadCodeDel implements ast.Visitor
         {
             this.visit(s.stms.get(i));
             if (this.shouldDel)
+            {
+                this.isOptimizing = true;
                 s.stms.remove(i);
+            }
         }
         this.shouldDel = s.stms.size() == 0;
     }
@@ -143,14 +147,14 @@ public class DeadCodeDel implements ast.Visitor
             this.localLiveness = temOriginal;
             return;
         }
-        this.isAssign = false;
+        // this.isAssign = false;
         this.visit(s.condition);
     }
 
     @Override
     public void visit(Ast.Stm.Print s)
     {
-        this.isAssign = false;
+        // this.isAssign = false;
         this.visit(s.exp);
         this.shouldDel = false;
     }
@@ -166,7 +170,7 @@ public class DeadCodeDel implements ast.Visitor
             this.localLiveness = temOriginal;
             return;         // so return is safe.
         }
-        this.isAssign = false;
+        // this.isAssign = false;
         this.visit(s.condition);
     }
 
@@ -178,14 +182,17 @@ public class DeadCodeDel implements ast.Visitor
         m.locals.forEach(l -> this.localVars.add(((Ast.Dec.DecSingle) l).id));
         this.localLiveness = new HashSet<>();
 
-        this.isAssign = false;
+        // this.isAssign = false;
         this.visit(m.retExp);
 
         for (int i = m.stms.size() - 1; i >= 0; i--)
         {
             this.visit(m.stms.get(i));
             if (this.shouldDel)
+            {
+                this.isOptimizing = true;
                 m.stms.remove(i);
+            }
         }
     }
 
@@ -205,6 +212,13 @@ public class DeadCodeDel implements ast.Visitor
     @Override
     public void visit(Ast.Program.ProgramSingle p)
     {
+        this.isOptimizing = false;
         p.classes.forEach(this::visit);
+    }
+
+    @Override
+    public boolean isOptimizing()
+    {
+        return this.isOptimizing;
     }
 }
