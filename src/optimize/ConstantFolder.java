@@ -5,9 +5,10 @@ import ast.Ast;
 /**
  * Created by Mengxu on 2017/1/23.
  */
-public class ConstantFolder implements ast.Visitor
+public class ConstantFolder implements ast.Visitor, Optimizable
 {
     private Ast.Exp.T lastExp;
+    private boolean isOptimizing;
 
     private boolean isConstant()
     {
@@ -42,10 +43,12 @@ public class ConstantFolder implements ast.Visitor
             Ast.Exp.Num temLeft = (Ast.Exp.Num) this.lastExp;
             this.visit(e.right);
             if (isConstant())
+            {
+                this.isOptimizing = true;
                 this.lastExp = new Ast.Exp.Num(
                         temLeft.num + ((Ast.Exp.Num) this.lastExp).num,
                         this.lastExp.lineNum);
-            else this.lastExp = new Ast.Exp.Add(temLeft, this.lastExp, this.lastExp.lineNum);
+            } else this.lastExp = new Ast.Exp.Add(temLeft, this.lastExp, this.lastExp.lineNum);
         } else this.lastExp = e;
     }
 
@@ -57,6 +60,7 @@ public class ConstantFolder implements ast.Visitor
         this.visit(e.right);
         Ast.Exp.T temRight = this.lastExp;
 
+        this.isOptimizing = true;
         if (temLeft instanceof Ast.Exp.False
                 || temRight instanceof Ast.Exp.False)
             this.lastExp = new Ast.Exp.False(e.lineNum);
@@ -67,7 +71,11 @@ public class ConstantFolder implements ast.Visitor
             this.lastExp = temRight;
         else if (temRight instanceof Ast.Exp.True)
             this.lastExp = temLeft;
-        else this.lastExp = e;
+        else
+        {
+            this.isOptimizing = false;
+            this.lastExp = e;
+        }
     }
 
     @Override
@@ -104,9 +112,12 @@ public class ConstantFolder implements ast.Visitor
             Ast.Exp.Num temLeft = (Ast.Exp.Num) this.lastExp;
             this.visit(e.right);
             if (isConstant())
+            {
+                this.isOptimizing = true;
                 this.lastExp = temLeft.num < ((Ast.Exp.Num) this.lastExp).num
                         ? new Ast.Exp.True(this.lastExp.lineNum)
                         : new Ast.Exp.False(this.lastExp.lineNum);
+            }
             else this.lastExp = new Ast.Exp.LT(temLeft, this.lastExp, this.lastExp.lineNum);
         } else this.lastExp = e;
     }
@@ -122,9 +133,12 @@ public class ConstantFolder implements ast.Visitor
     {
         this.visit(e.exp);
         if (isConstant())
+        {
+            this.isOptimizing = true;
             this.lastExp = this.lastExp instanceof Ast.Exp.True
                     ? new Ast.Exp.False(this.lastExp.lineNum)
                     : new Ast.Exp.True(this.lastExp.lineNum);
+        }
         else this.lastExp = e;
     }
 
@@ -143,9 +157,12 @@ public class ConstantFolder implements ast.Visitor
             Ast.Exp.Num temLeft = (Ast.Exp.Num) this.lastExp;
             this.visit(e.right);
             if (isConstant())
+            {
+                this.isOptimizing = true;
                 this.lastExp = new Ast.Exp.Num(
                         temLeft.num - ((Ast.Exp.Num) this.lastExp).num,
                         this.lastExp.lineNum);
+            }
             else this.lastExp = new Ast.Exp.Sub(temLeft, this.lastExp, this.lastExp.lineNum);
         } else this.lastExp = e;
     }
@@ -165,9 +182,12 @@ public class ConstantFolder implements ast.Visitor
             Ast.Exp.Num temLeft = (Ast.Exp.Num) this.lastExp;
             this.visit(e.right);
             if (isConstant())
+            {
+                this.isOptimizing = true;
                 this.lastExp = new Ast.Exp.Num(
                         temLeft.num * ((Ast.Exp.Num) this.lastExp).num,
                         this.lastExp.lineNum);
+            }
             else this.lastExp = new Ast.Exp.Times(temLeft, this.lastExp, this.lastExp.lineNum);
         } else this.lastExp = e;
     }
@@ -238,7 +258,14 @@ public class ConstantFolder implements ast.Visitor
     @Override
     public void visit(Ast.Program.ProgramSingle p)
     {
+        this.isOptimizing = false;
         this.visit(p.mainClass);
         p.classes.forEach(this::visit);
+    }
+
+    @Override
+    public boolean isOptimizing()
+    {
+        return this.isOptimizing;
     }
 }
