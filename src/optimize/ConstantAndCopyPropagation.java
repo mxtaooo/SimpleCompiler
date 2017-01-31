@@ -7,13 +7,13 @@ import java.util.HashMap;
 /**
  * Created by Mengxu on 2017/1/28.
  */
-public class ConstantAndCopyPropagation implements ast.Visitor
+public class ConstantAndCopyPropagation implements ast.Visitor, Optimizable
 {
     private HashMap<String, Ast.Exp.T> conorcopy; // constant or copy in current method
     private Ast.Exp.T curExp;
     private boolean canChange;
     private boolean inWhile; // if in while body, the left of assign should be delete from conorcopy
-
+    private boolean isOptimizing;
 
     private boolean isEqual(Ast.Exp.T fir, Ast.Exp.T sec)
     {
@@ -100,6 +100,7 @@ public class ConstantAndCopyPropagation implements ast.Visitor
     {
         if (this.conorcopy.containsKey(e.id))
         {
+            this.isOptimizing = true;
             this.canChange = true;
             this.curExp = this.conorcopy.get(e.id);
         } else this.canChange = false;
@@ -271,6 +272,13 @@ public class ConstantAndCopyPropagation implements ast.Visitor
     @Override
     public void visit(Ast.Program.ProgramSingle p)
     {
+        this.isOptimizing = false;
         p.classes.forEach(this::visit);
+    }
+
+    @Override
+    public boolean isOptimizing()
+    {
+        return isOptimizing;
     }
 }
