@@ -8,18 +8,26 @@ public class Optimizer
     public void optimize(ast.Ast.Program.T prog)
     {
         UnUsedVarDel varDeler = new UnUsedVarDel();
-        varDeler.visit(prog);
-
+        varDeler.givesWarning = true;
         ConstantFolder folder = new ConstantFolder();
-        folder.visit(prog);
-
         UnReachableDel deler = new UnReachableDel();
-        deler.visit(prog);
-
         DeadCodeDel deadDeler = new DeadCodeDel();
-        deadDeler.visit(prog);
-
         ConstantAndCopyPropagation proper = new ConstantAndCopyPropagation();
-        proper.visit(prog);
+
+        boolean flag;
+        do
+        {
+            varDeler.visit(prog);
+            varDeler.givesWarning = false;
+            folder.visit(prog);
+            deler.visit(prog);
+            deadDeler.visit(prog);
+            proper.visit(prog);
+            flag = varDeler.isOptimizing()
+                    || folder.isOptimizing()
+                    || deler.isOptimizing()
+                    || deadDeler.isOptimizing()
+                    || proper.isOptimizing();
+        } while (flag);
     }
 }
