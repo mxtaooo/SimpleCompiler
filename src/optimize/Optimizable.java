@@ -6,7 +6,4 @@ package optimize;
 public interface Optimizable
 {
     boolean isOptimizing();
-
-    boolean givesWarning = false;
-
 }

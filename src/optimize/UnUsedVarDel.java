@@ -9,10 +9,10 @@ import java.util.Hashtable;
  */
 public class UnUsedVarDel implements ast.Visitor, Optimizable
 {
-
     private Hashtable<String, Ast.Dec.DecSingle> unUsedLocals;
     private Hashtable<String, Ast.Dec.DecSingle> unUsedArgs;
     private boolean isOptimizing;
+    public boolean givesWarning;
 
     @Override
     public void visit(Ast.Type.Boolean t) {}
@@ -156,7 +156,7 @@ public class UnUsedVarDel implements ast.Visitor, Optimizable
                 || this.unUsedLocals.size() > 0;
         this.unUsedArgs.forEach((uak, uao) ->
         {
-            if (Optimizable.givesWarning)
+            if (givesWarning)
                 System.out.println("Warning: at line " + uao.lineNum + " : "
                         + "the argument \"" + uak + "\" of method \""
                         + m.id + "\" you have never used.");
@@ -164,7 +164,7 @@ public class UnUsedVarDel implements ast.Visitor, Optimizable
 
         this.unUsedLocals.forEach((ulk, ulo) ->
         {
-            if (Optimizable.givesWarning)
+            if (givesWarning)
                 System.out.println("Warning: at line " + ulo.lineNum + " : "
                         + "the local variable \"" + ulk + "\" you have never used."
                         + " Now we delete it.");
