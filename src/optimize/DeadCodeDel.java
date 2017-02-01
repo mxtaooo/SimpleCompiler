@@ -13,6 +13,7 @@ public class DeadCodeDel implements ast.Visitor, Optimizable
     private HashSet<String> localVars;  // the local variables and formals in current method
     private HashSet<String> localLiveness;  // the living id in current statement
     // private boolean isAssign;   // current id is in the left of assign(true), or is being evaluated(false)
+    private boolean containsCall;   // current statement contains method call?
     private boolean shouldDel;  // should delete current statement?
     private boolean isOptimizing;
 
@@ -47,6 +48,7 @@ public class DeadCodeDel implements ast.Visitor, Optimizable
     {
         this.visit(e.exp);
         e.args.forEach(this::visit);
+        this.containsCall = true;
     }
 
     @Override
@@ -101,13 +103,19 @@ public class DeadCodeDel implements ast.Visitor, Optimizable
     @Override
     public void visit(Ast.Stm.Assign s)
     {
-        if (this.localLiveness.contains(s.id))
+        if (this.localLiveness.contains(s.id)
+                || this.curFields.contains(s.id))
         {
             this.localLiveness.remove(s.id);
             this.visit(s.exp);
             this.shouldDel = false;
-        } else
-            this.shouldDel = !this.curFields.contains(s.id);
+            return;
+        }
+
+        this.containsCall = false;
+        this.visit(s.exp);
+        if (this.containsCall)
+            this.shouldDel = false;
     }
 
     @Override
