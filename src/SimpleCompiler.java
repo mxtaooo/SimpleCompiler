@@ -1,6 +1,7 @@
 import ast.Ast;
 import codegen.ByteCodeGenerator;
 import codegen.TranslatorVisitor;
+import optimize.Optimizer;
 import parser.Parser;
 import semantic.SemanticVisitor;
 
@@ -43,6 +44,9 @@ public class SimpleCompiler
         // if the program is correct, we generate code for it
         if (!checker.isOK())
             return;
+
+        Optimizer optimizer = new Optimizer();
+        optimizer.optimize(prog);
 
         TranslatorVisitor translator = new TranslatorVisitor();
         translator.visit(prog);
