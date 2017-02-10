@@ -1,8 +1,39 @@
 # Some Thinking about the compiler
 
-## Bad Things
+这里主要是记录在编译器实现过程中的一些思考，无论本编译器的选择是好是坏，在此有所
+体现。
 
-### In Language Grammar
+该文章目录如下：
+
+[BadThings](#bad_things)
+
++ [In Language Grammar](#in_language_grammar)
+
++ [In Parser](#in_parser)
+
++ [In Semantic](#in_semantic)
+
++ [In Code Generation](#in_code_generation)
+
++ [Method Overload](#method_overload)
+
+[Interesting Things](#interesting_things)
+
++ [Currying](#currying)
+
++ [Closure](#closure)
+
++ [Lambda Expression](#lambda_expression)
+
++ [Local Method](#local_method)
+
++ [Type Inference](@type_inference)
+
++ [Overload Resolution](#overload_resolution)
+
+## <a id="bad_things">Bad Things</a>
+
+### <a id="in_language_grammar">In Language Grammar</a>
 
 #### 问题描述
 
@@ -58,7 +89,7 @@ int Compute(int a, int b, boolean switch)
 
 这样整理似乎并没有太棘手，但应当注意到，这里涉及到了对于全局都在用的AST的结构修改，而且是比较大的修改，由于我们之前是严格按照文法在做，因此返回语句的表达式直接定义在了方法层级里，要将之修改到语句层级里。棘手程度可想而知，这也体现了设计合理的重要性。
 
-### ~~In Parser~~
+### <a id="in_parser">~~In Parser~~</a>
 
 #### 问题描述
 
@@ -92,7 +123,7 @@ class Instance
 
 最终结果是给`Parser`实现`mark`/`reset`，对于某些Token的存储/回溯/删除自行决定，`Lexer`只负责流式给出下一个Token。
 
-### In Semantic
+### <a id="in_semantic">In Semantic</a>
 
 ```java
 class Instance
@@ -147,7 +178,7 @@ class Instance
 看来这个问题确实无解，或者说，由于处在“外界”，有很多方式能对其产生副作用，编译器根本没办法、没有足够可靠的信息确定每个字段的赋值状态，只有把程序运行一下才能确定，但那是运行时的事情了，编译期根本无从下手。这就取决于程序员自己的把握，编译器并没有那么强的能力，只能尽可能的做检查，给程序员尽可能多的提示，作为检查/修改/重构代码的依据。
 
 
-### In Code Generation
+### <a id="in_code_generation">In Code Generation</a>
 
 Java Virtual Machine Specification - 2.3.4 The `boolean` type
 > Although the Java Virtual Machine defines a boolean type, it only provides
@@ -158,18 +189,18 @@ of the Java Virtual Machine int data type.
 
 我们这个程序加入了`boolean`这一类型，然后强调了它与`int`类型之间的区别，编译器拒绝了双方任何的直接互操作，但是到了代码生成阶段，两个又变成了同一个类型`int`。虽然这里放在了badthings里，但是个人认为这并不是个错误的决定，看上去绕了一个大圈子，但是这样对程序的安全合法做了最大的保证，类型检查能通过的，就一定是合法的。如果允许`boolean`类型和`int`类型之间的互操作，就要引入一些的前提/隐式声明/约定之类的东西，增加的语言复杂度，对程序安全也带来了隐患。
 
-### Method Overload
+### <a id="method_overload">Method Overload</a>
 
 我们的程序支持了的方法/字段的同名覆盖，但是这样的话我们应当给出相应的提示/警告，告知用户
 
 此外，同时应该修改方法的签名方式，用于支持之后要扩展出的方法重载
 
 
-## Interesting Things
+## <a id="interesting_things">Interesting Things</a>
 
 如下所述是发觉很有意思而且添加难度不是特别特别大的东西
 
-### Currying
+### <a id="currying">Currying</a>
 
 当前业界比较潮流的是各种函数式编程，因此关注到了很多函数式的，有意思的特性，Curring便是其中之一
 
@@ -202,11 +233,11 @@ let func = fun x -> fun y -> x + y;
 
 刻意Curry化的表达式写法这不应该是程序员的工作，这是为了数学统一化而让编译器自动完成的工作，而不应当让程序员来迎合编译器而去做这项工作。尤其是这个工作编译器不是不能自行完成，因此添加这个工作实在是，画蛇添足。
 
-### Closure
+### <a id="closure">Closure</a>
 
 闭包的相关知识前提，具体可参考下文Local Method后方的相关介绍。
 
-### Lambda Expression
+### <a id="lambda_expression">Lambda Expression</a>
 
 对我们这个程序而言，这个行为是在添加语法糖。
 
@@ -310,7 +341,7 @@ int Func = x => x + 1;
 
 以上几个表达式，最终都将编译成一个普通的实例方法，但是我们应当注意到，没有类型声明的地方，我们需要进行类型推断，如下所述
 
-### Local Method
+### <a id="local_method">Local Method</a>
 
 考虑添加本地方法的语法扩展，编译结果为实例方法
 
@@ -411,7 +442,7 @@ internal class $InternalCalss
 
 这里我们应当注意到，要给当前程序添加其他对象字段的访问能力，扩充文法：`assign -> obj.field = exp;`
 
-### Type Inference
+### <a id="type_inference">Type Inference</a>
 
 类型推断，说起来其实很简单，从已知推定未知。
 
@@ -533,7 +564,7 @@ class MainClass
 
 此外，Java8中扩展出的stream api非常地functionally，流式操作，惰性求值。
 
-### Overload Resolution
+### <a id="overload_resolution">Overload Resolution</a>
 
 重载决策，首先，应当支持函数重载，再来考虑重载决策。
 
