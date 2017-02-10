@@ -56,7 +56,7 @@
 
     `Error: Line 32 the parameter 2 needs a int, but got a boolean`
 
-  + <span id="printexp">`print(exp)`</span>
+  + <a id="printexp">`print(exp)`</a>
 
     应当注意到，在本程序中我们认为print是一个语句，而不是函数调用表达式。这样做的目的是为了简化该编译器开发，但其本质依旧是函数调用，因此对于它的类型检查等同函数调用。此外，本程序仅支持每行输出一个整型数字，因此exp最终应当能求得一个整型数字。
 
@@ -81,7 +81,7 @@
 
     这里是讨论剩余的几类特殊的表达式，变量/字段引用，字面量，this关键字，实例化对象表达式。
 
-  + <span id="identifier">identifier</span>
+  + <a id="identifier">identifier</a>
 
     查找标识符大致分为两步，首先在参数列表/本地变量表查找该标识符，若查找失败，再去类/基类字段声明列表中尝试查找。若最终查找失败，则报告一个错误。
 
@@ -91,7 +91,7 @@
 
     这个种类主要包括整型数字，`true`/`false`/`this`关键字。应当特别注意`this`关键字，它指代当前类的实例，它的类型自然是该关键字所处的类的类型。
 
-  + <span id="classnotfound">`new id()`</span>
+  + <a id="classnotfound">`new id()`</a>
 
     应当注意到本程序不支持构造函数，因此每个类只有一个形式上的无参构造器。除主类外，对于其他普通类的声明顺序不做要求。如果尝试实例化一个不存在的类，也会报告错误。
 
