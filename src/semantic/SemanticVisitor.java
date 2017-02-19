@@ -135,6 +135,23 @@ public class SemanticVisitor implements ast.Visitor
         });
 
         MethodType mty = this.classTable.getMethodType(expType.id, e.id);
+
+        if (mty == null)
+        {
+            error(e.lineNum, "the method you are calling haven't been defined.");
+            e.at = argsty;
+            e.rt = new Ast.Type.T()
+            {
+                @Override
+                public String toString()
+                {
+                    return "unknown";
+                }
+            };
+            this.type = e.rt;
+            return;
+        }
+
         if (mty.argsType.size() != argsty.size())
             error(e.lineNum, "the count of arguments is not match.");
 
