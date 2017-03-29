@@ -5,62 +5,87 @@ GRAMMAR
 ---
 
 ```text
- ## GRAMMAR
+## GRAMMAR
 
- Program -> MainClass ClassDec*
+Program
+   -> MainClass
+   | MainClass ClassDecList
 
- MainClass -> class Id { void main() { Statement }}
+MainClass
+   -> class Id { void main() { Statement }}
 
- ClassDec -> class Id { VarDec* MethodDec* }
-          -> class Id : Id { VarDec* MethodDec* }
+ClassDecList
+   -> ClassDec
+   | ClassDec ClassDecList
 
- VarDec -> Type Id;
+ClassDec
+   -> class Id { VarDecList MethodDecList }
+   | class Id : Id { VarDecList MethodDecList }
 
- MethodDec -> Type Id (FormalList)
-              { VarDec* Statement* return Exp;}
+VarDecList
+   -> VarDec
+   | VarDec VarDecList
+   |
 
- FormalList -> Type Id FormalRest*
-            ->
+VarDec -> Type Id;
 
- FormalRest -> , Type Id
+MethodDecList
+   -> MethodDec
+   | MethodDec MethodDecList
+   |
 
- Type -> int
-      -> boolean
-      -> Id
+MethodDec -> Type Id (FormalList)
+             { VarDecList StatementList return Exp;}
 
- Statement -> { Statement* }
-           -> if (Exp) Statement else Statement
-           -> while (Exp) Statement
-           -> print(Exp);
-           -> Id = Exp;
+FormalList
+   -> Type Id
+   | Type Id, FormalList
+   |
 
- Exp -> Exp op Exp
-     -> Exp.Id(ExpList)
-     -> Integer Literal
-     -> true
-     -> false
+Type -> int
+     -> boolean
      -> Id
-     -> this
-     -> new Id()
-     -> !Exp
-     -> (Exp)
 
- Op -> +
-    -> -
-    -> *
-    -> <
-    -> &&
+StatementList
+   -> Statement
+   | Statement StatementList
+   |
 
- ExpList -> Exp ExpRest*
-         ->
+Statement
+   -> { StatementList }
+   | if (Exp) Statement else Statement
+   | while (Exp) Statement
+   | print(Exp);
+   | Id = Exp;
 
- ExpRest -> ,Exp
+Exp
+   -> Exp Op Exp
+   | Exp.Id(ExpList)
+   | IntegerLiteral
+   | true
+   | false
+   | Id
+   | this
+   | new Id()
+   | !Exp
+   | (Exp)
 
- Id -> [A-Za-z_][A-Za-z0-9_]*
+Op -> +
+   | -
+   | *
+   | <
+   | &&
 
- Integer Literal -> [0-9]+
+ExpList
+   -> Exp
+   | Exp, ExpList
+   |
 
- LineComment -> // the total line is comment
+Id -> [A-Za-z_][A-Za-z0-9_]*
+
+IntegerLiteral -> [0-9]+
+
+LineComment -> // the total line is comment
 ```
 
 由以上文法给出的程序样例
