@@ -114,10 +114,3 @@ class Test
     }
 }
 ```
-
-备注
----
-
-应当注意，在实际的java语言中，对于程序入口点的 `main` 方法的完整定义是 `public static void main(String[] args)`。我们在这个“子集”里面，精简了这个声明，因为我们目前暂不支持 `static` 方法，也不需要给程序传递参数(不支持 `String` 类)。精简处理的收益仅是简化一些语法分析的工作。
-
-同样的，对于 `print` 语句，在实际java代码中是对于 `System.out.println()` 的调用，我们也将之简化了。
