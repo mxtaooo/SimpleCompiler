@@ -113,6 +113,8 @@
 
 分析算法主要分为自顶向下分析和自底向上分析，其中自顶向下分析包括递归下降分析算法(预测分析算法)和LL分析算法，自底向上分析包括LR分析算法。
 
+### 递归下降分析算法
+
 本编译器采用的是递归下降分析算法(预测分析)，该算法的主要优点是
 
 + 分析高效，线性时间复杂度
@@ -124,7 +126,63 @@
 该算法的基本思想是：
 
 + 为每个非终结符构造一个分析函数
-+ 用**前看符号**指导产生式规则的选择
++ 通过**前看符号**指导产生式规则的选择
+
+### 分析算法在本程序的应用
+
+我们选择一个简单的部分来介绍递归下降分析算法在程序中的应用。
+
+如上文所述，用户自定义的类由两部分构成，字段列表和实例方法列表(当然，这个两个列表都可以为空)，那么我们就给出这样一个方法
+
+```java
+// Class
+//   -> class Id { VarDecList MethodDecList }
+//   | class Id : Id { VarDecList MethodDecList }
+Class ParseClass()
+{
+    // 其他代码
+    _fieldList = ParseFieldList();
+    _methodList = ParseMethodList();
+
+    return new Class(_fieldList, _methodList);
+}
+```
+
+如上述代码所示，在从记号流解析一个类型实体时，调用了字段列表和方法列表的解析方法，并将解析的结果作为一个类型实体的组成部分(此处并未体现类名、父类等信息)。
+
+很显然的，在 `ParseFieldList`、`ParseMethodList`两个方法内部，必定含有对于单个字段、单个方法实体的解析方法的调用，并将单个的实体结果组织起来，以返回给外界。
+
+思考一下我们的文法规定的一个方法的构成形式，返回类型、方法名、参数列表、本地变量列表、语句列表，返回语句。这些部分的一个组织是方法，那么很自然地，我们又能为此写一个解析方法。
+
+以上就体现了分析算法中*为每个非终结符构造一个分析函数*思想。但是还有另外一部分思想，*通过**前看符号**指导产生式规则的选择*还未体现。
+
+考虑另外一条文法，关于“语句”。语句在我们的程序中有五种形式，由{}组织的语句块，if-else语句，while语句，赋值语句，输出语句。我们只需要看第一个符号，就能知道应当选择哪一条产生式来解析，伪代码描述如下所示。
+
+```java
+// Statement
+//    -> { StatementList }
+//    | if (Exp) Statement else Statement
+//    | while (Exp) Statement
+//    | print(Exp);
+//    | Id = Exp;
+Statement ParseStatement()
+{
+    switch(firstToken)
+    {
+        case "{":
+            return ParseStatementBlock();
+        case "if":
+            return ParseIfElseStatement();
+        case "while":
+            return ParseWhileStatement();
+        // ...
+        default:
+            throw new WrongCodeException(message);
+    }
+}
+```
+
+从伪代码中很清晰地体现出来，我们只需要通过查看一个“前看符号”就能确定要选择哪个方向去解析当前语句。如果解析失败，那么必定是用户给的源程序出现了问题，导致我们程序选择了错误的方向，或者出现了错误，这就需要用户修改源代码，然后重新编译。
 
 ## 实例分析
 
