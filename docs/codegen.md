@@ -263,11 +263,9 @@ print
 
 ## 字节码生成
 
-到上个步骤为止，得到了文本形式表示的指令，但这还不能用于JVM使之运行，还需要将这些指令转换成“二进制版”。这一步骤我们用到了开源界的一些工作。
+到上个步骤为止，得到了文本形式表示的指令，但这还不能用于JVM使之运行，还需要将这些指令转换成“二进制版”。因此最后的工作就是从字符形式的指令，由“汇编器”转换成二进制形式的.class文件，用于jvm的运行。此处我们采用了开源界的一些工作，[Jasmin](http://jasmin.sourceforge.net/)。
 
 > Jasmin is an assembler for the Java Virtual Machine. It takes ASCII descriptions of Java classes, written in a simple assembler-like syntax using the Java Virtual Machine instruction set. It converts them into binary Java class files, suitable for loading by a Java runtime system.
-
-按照官方对其的定义，这是一个“汇编器”，能将已经生成的文件变成JVM真正可用的字节码。
 
 ## 实例分析
 
@@ -328,7 +326,3 @@ Label_1:
     ireturn     ; 从方法返回。
 .end method
 ```
-
-## Jasmin - ASCII Instructions File to .class File
-
-最后的工作就是从字符形式的指令，由“汇编器”转换成二进制形式的.class文件，用于jvm的运行。此处我们采用了已经成熟的一个工具，[Jasmin](http://jasmin.sourceforge.net/)。
