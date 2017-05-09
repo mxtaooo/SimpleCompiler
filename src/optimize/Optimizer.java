@@ -11,8 +11,6 @@ public class Optimizer
         varDeler.givesWarning = true;
         ConstantFolder folder = new ConstantFolder();
         UnReachableDel deler = new UnReachableDel();
-        DeadCodeDel deadDeler = new DeadCodeDel();
-        ConstantAndCopyPropagation proper = new ConstantAndCopyPropagation();
 
         boolean flag;
         do
@@ -21,13 +19,9 @@ public class Optimizer
             varDeler.givesWarning = false;
             folder.visit(prog);
             deler.visit(prog);
-            deadDeler.visit(prog);
-            proper.visit(prog);
             flag = varDeler.isOptimizing()
                     || folder.isOptimizing()
-                    || deler.isOptimizing()
-                    || deadDeler.isOptimizing()
-                    || proper.isOptimizing();
+                    || deler.isOptimizing();
         } while (flag);
     }
 }
